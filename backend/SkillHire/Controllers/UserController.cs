@@ -15,14 +15,14 @@ namespace SkillHire.Controllers
             _context = context;
         }
 
-        // GET: api/Users
+        // GET
         [HttpGet]
         public IActionResult GetUsers()
         {
             return Ok(_context.Users.ToList());
         }
 
-        // POST: api/Users
+        // POST
         [HttpPost]
         public IActionResult CreateUser(User user)
         {
