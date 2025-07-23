@@ -8,7 +8,7 @@ namespace SkillHire.Models
 
         [Required]
         public int UserId { get; set; }
-        public User User { get; set; }
+        public User? User { get; set; }
 
         [Required]
         public string City { get; set; }
@@ -19,10 +19,10 @@ namespace SkillHire.Models
         [Required]
         public int YearsExperience { get; set; }
 
-        public string ProfilePhoto { get; set; }
+        public string ProfilePhoto { get; set; } = "/uploads/profile-photos/default.jpg";
 
-        public ICollection<WorkerService> WorkerServices { get; set; }
+        public ICollection<WorkerService>? WorkerServices { get; set; }
 
-        public ICollection<WorkerPhoto> WorkerPhotos { get; set; }
+        public ICollection<WorkerPhoto>? WorkerPhotos { get; set; }
     }
 }
