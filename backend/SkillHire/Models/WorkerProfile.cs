@@ -4,7 +4,7 @@ namespace SkillHire.Models
 {
     public class WorkerProfile
     {
-        public int Id { get; set; } // Primary Key
+        public int Id { get; set; }
 
         [Required]
         public int UserId { get; set; }

@@ -8,7 +8,7 @@ namespace SkillHire.Models
 
         [Required]
         public int WorkerProfileId { get; set; } 
-        public WorkerProfile WorkerProfile { get; set; }
+        public WorkerProfile? WorkerProfile { get; set; }
 
         [Required]
         public string ImageUrl { get; set; } 
