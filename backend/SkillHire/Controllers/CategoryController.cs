@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillHire.Data;
 using SkillHire.Models;
@@ -34,6 +35,7 @@ namespace SkillHire.Controllers
 
         // POST
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCategory([FromBody] Category category)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -46,6 +48,7 @@ namespace SkillHire.Controllers
 
         // PUT
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
         {
             if (id != category.Id) return BadRequest();
@@ -67,6 +70,7 @@ namespace SkillHire.Controllers
 
         // DELETE
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.Categories.FindAsync(id);

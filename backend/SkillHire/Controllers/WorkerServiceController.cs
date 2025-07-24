@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillHire.Data;
 using SkillHire.Models;
@@ -18,6 +19,7 @@ namespace SkillHire.Controllers
 
         // GET
         [HttpGet]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> GetWorkerServices()
         {
             var workerServices = await _context.WorkerServices
@@ -30,6 +32,7 @@ namespace SkillHire.Controllers
 
         // GET id
         [HttpGet("{workerProfileId}/{serviceId}")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> GetWorkerService(int workerProfileId, int serviceId)
         {
             var workerService = await _context.WorkerServices
@@ -43,6 +46,7 @@ namespace SkillHire.Controllers
 
         // POST
         [HttpPost]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> CreateWorkerService([FromBody] WorkerService workerService)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -57,6 +61,7 @@ namespace SkillHire.Controllers
 
         // PUT
         [HttpPut("{workerProfileId}/{serviceId}")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> UpdateWorkerService(int workerProfileId, int serviceId, [FromBody] WorkerService workerService)
         {
             if (workerProfileId != workerService.WorkerProfileId || serviceId != workerService.ServiceId)
@@ -82,6 +87,7 @@ namespace SkillHire.Controllers
 
         // DELETE
         [HttpDelete("{workerProfileId}/{serviceId}")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> DeleteWorkerService(int workerProfileId, int serviceId)
         {
             var workerService = await _context.WorkerServices

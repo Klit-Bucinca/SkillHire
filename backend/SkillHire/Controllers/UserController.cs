@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SkillHire.Data;
 using SkillHire.Models;
 
@@ -17,6 +18,7 @@ namespace SkillHire.Controllers
 
         // GET
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetUsers()
         {
             return Ok(_context.Users.ToList());

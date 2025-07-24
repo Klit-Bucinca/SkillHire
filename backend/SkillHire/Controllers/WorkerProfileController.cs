@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkillHire.Data;
 using SkillHire.Models;
@@ -49,6 +50,7 @@ namespace SkillHire.Controllers
 
         // POST
         [HttpPost]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> CreateWorkerProfile([FromBody] WorkerProfile profile)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -61,6 +63,7 @@ namespace SkillHire.Controllers
 
         // PUT
         [HttpPut("{id}")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> UpdateWorkerProfile(int id, [FromBody] WorkerProfile profile)
         {
             if (id != profile.Id) return BadRequest();
@@ -82,6 +85,7 @@ namespace SkillHire.Controllers
 
         // DELETE
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> DeleteWorkerProfile(int id)
         {
             var profile = await _context.WorkerProfiles.FindAsync(id);
@@ -95,6 +99,7 @@ namespace SkillHire.Controllers
 
         // POST
         [HttpPost("{id}/upload-photo")]
+        [Authorize(Roles = "Worker")]
         public async Task<IActionResult> UploadProfilePhoto(int id, IFormFile file)
         {
             var profile = await _context.WorkerProfiles.FindAsync(id);
