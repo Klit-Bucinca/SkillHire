@@ -58,7 +58,7 @@ namespace SkillHire.Controllers
         new Claim(ClaimTypes.Role, user.Role)
     };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_here")); // Replace with env var later
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_here")); 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -74,11 +74,11 @@ namespace SkillHire.Controllers
 
         public class UserLoginDto
         {
-            public string Username { get; set; } // Can be username or email
+            public string Username { get; set; } 
             public string Password { get; set; }
         }
 
-        // POST: api/Auth/register
+        // POST:
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterDto request)
         {
