@@ -1,34 +1,24 @@
 import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom"; 
+import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
 
 export default function Login() {
-  const history = useHistory(); 
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const history = useHistory();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("https://localhost:7109/api/Auth/login", {
-        username: email,
-        password,
-      });
-
-      const token = response.data.token;
-      localStorage.setItem("token", token);
-
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const role = payload.Role || payload.role;
-
-      if (role === "Admin") history.push("/admin");    
-      else if (role === "Worker") history.push("/worker"); 
-      else history.push("/");
-
+      const res = await axios.post("https://localhost:7109/api/Auth/login", formData);
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data));
+      alert("Login successful!");
+      history.push("/admin/dashboard");
     } catch (err) {
-      console.error(err);
-      setError("Invalid email or password");
+      alert("Login failed: " + (err.response?.data || err.message));
     }
   };
 
@@ -45,7 +35,28 @@ export default function Login() {
                   </h6>
                 </div>
                 <div className="btn-wrapper text-center">
-                  {}
+                  <button
+                    className="bg-white active:bg-blueGray-50 text-blueGray-700 font-normal px-4 py-2 rounded outline-none focus:outline-none mr-2 mb-1 uppercase shadow hover:shadow-md inline-flex items-center font-bold text-xs ease-linear transition-all duration-150"
+                    type="button"
+                  >
+                    <img
+                      alt="..."
+                      className="w-5 mr-1"
+                      src={require("assets/img/github.svg").default}
+                    />
+                    Github
+                  </button>
+                  <button
+                    className="bg-white active:bg-blueGray-50 text-blueGray-700 font-normal px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1 uppercase shadow hover:shadow-md inline-flex items-center font-bold text-xs ease-linear transition-all duration-150"
+                    type="button"
+                  >
+                    <img
+                      alt="..."
+                      className="w-5 mr-1"
+                      src={require("assets/img/google.svg").default}
+                    />
+                    Google
+                  </button>
                 </div>
                 <hr className="mt-6 border-b-1 border-blueGray-300" />
               </div>
@@ -53,44 +64,57 @@ export default function Login() {
                 <div className="text-blueGray-400 text-center mb-3 font-bold">
                   <small>Or sign in with credentials</small>
                 </div>
-                <form onSubmit={(e) => e.preventDefault()}>
+                <form>
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
+                    <label
+                      className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                    >
                       Email
                     </label>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
-                      placeholder="Email"
-                      required
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                      placeholder="Email or Username"
                     />
                   </div>
 
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
+                    <label
+                      className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                    >
                       Password
                     </label>
                     <input
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
                       placeholder="Password"
-                      required
                     />
                   </div>
 
-                  {error && (
-                    <p className="text-red-500 text-xs italic mb-3">{error}</p>
-                  )}
+                  <div>
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        id="customCheckLogin"
+                        type="checkbox"
+                        className="form-checkbox border-0 rounded text-blueGray-700 ml-1 w-5 h-5 ease-linear transition-all duration-150"
+                      />
+                      <span className="ml-2 text-sm font-semibold text-blueGray-600">
+                        Remember me
+                      </span>
+                    </label>
+                  </div>
 
                   <div className="text-center mt-6">
                     <button
-                      onClick={handleLogin}
-                      className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg w-full"
+                      className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
                       type="button"
+                      onClick={handleLogin}
                     >
                       Sign In
                     </button>
@@ -100,12 +124,16 @@ export default function Login() {
             </div>
             <div className="flex flex-wrap mt-6 relative">
               <div className="w-1/2">
-                <a href="#" className="text-blueGray-200">
+                <a
+                  href="#pablo"
+                  onClick={(e) => e.preventDefault()}
+                  className="text-blueGray-200"
+                >
                   <small>Forgot password?</small>
                 </a>
               </div>
               <div className="w-1/2 text-right">
-                <Link to="/register" className="text-blueGray-200">
+                <Link to="/auth/register" className="text-blueGray-200">
                   <small>Create new account</small>
                 </Link>
               </div>

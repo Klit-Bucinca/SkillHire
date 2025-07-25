@@ -21,7 +21,15 @@ namespace SkillHire.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCategories()
         {
-            return Ok(await _context.Categories.ToListAsync());
+            var categories = await _context.Categories
+                .Select(c => new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name
+                })
+                .ToListAsync();
+
+            return Ok(categories);
         }
 
         // GET id

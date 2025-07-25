@@ -15,11 +15,14 @@ namespace SkillHire.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AppDbContext _context;
 
-        public AuthController(AppDbContext context)
+        private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -58,7 +61,7 @@ namespace SkillHire.Controllers
         new Claim(ClaimTypes.Role, user.Role)
     };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_super_secret_key_here")); 
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(

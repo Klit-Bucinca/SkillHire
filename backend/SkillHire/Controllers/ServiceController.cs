@@ -21,7 +21,17 @@ namespace SkillHire.Controllers
         [HttpGet]
         public async Task<IActionResult> GetServices()
         {
-            var services = await _context.Services.Include(s => s.Category).ToListAsync();
+            var services = await _context.Services
+                .Include(s => s.Category)
+                .Select(s => new ServiceDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    CategoryId = s.CategoryId,
+                    CategoryName = s.Category.Name
+                })
+                .ToListAsync();
+
             return Ok(services);
         }
 
@@ -29,8 +39,17 @@ namespace SkillHire.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetService(int id)
         {
-            var service = await _context.Services.Include(s => s.Category)
+            var service = await _context.Services
+                .Include(s => s.Category)
+                .Select(s => new ServiceDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    CategoryId = s.CategoryId,
+                    CategoryName = s.Category.Name
+                })
                 .FirstOrDefaultAsync(s => s.Id == id);
+
             if (service == null) return NotFound();
             return Ok(service);
         }

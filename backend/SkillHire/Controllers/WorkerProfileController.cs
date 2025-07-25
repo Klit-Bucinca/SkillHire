@@ -25,12 +25,32 @@ namespace SkillHire.Controllers
         {
             var profiles = await _context.WorkerProfiles
                 .Include(wp => wp.User)
-                .Include(wp => wp.WorkerServices)
-                    .ThenInclude(ws => ws.Service)
+                .Include(wp => wp.WorkerServices).ThenInclude(ws => ws.Service)
                 .Include(wp => wp.WorkerPhotos)
                 .ToListAsync();
 
-            return Ok(profiles);
+            var dtoList = profiles.Select(profile => new WorkerProfileDto
+            {
+                Id = profile.Id,
+                UserId = profile.UserId,
+                City = profile.City,
+                Phone = profile.Phone,
+                YearsExperience = profile.YearsExperience,
+                ProfilePhoto = profile.ProfilePhoto,
+                Services = profile.WorkerServices?
+                    .Select(ws => ws.Service.Name)
+                    .ToList() ?? new List<string>(),
+                Photos = profile.WorkerPhotos?
+                    .Select(p => new WorkerPhotoDto
+                    {
+                        Id = p.Id,
+                        ImageUrl = p.ImageUrl,
+                        Description = p.Description
+                    })
+                    .ToList() ?? new List<WorkerPhotoDto>()
+            }).ToList();
+
+            return Ok(dtoList);
         }
 
         // GET
@@ -39,13 +59,34 @@ namespace SkillHire.Controllers
         {
             var profile = await _context.WorkerProfiles
                 .Include(wp => wp.User)
-                .Include(wp => wp.WorkerServices)
-                    .ThenInclude(ws => ws.Service)
+                .Include(wp => wp.WorkerServices).ThenInclude(ws => ws.Service)
                 .Include(wp => wp.WorkerPhotos)
                 .FirstOrDefaultAsync(wp => wp.Id == id);
 
             if (profile == null) return NotFound();
-            return Ok(profile);
+
+            var dto = new WorkerProfileDto
+            {
+                Id = profile.Id,
+                UserId = profile.UserId,
+                City = profile.City,
+                Phone = profile.Phone,
+                YearsExperience = profile.YearsExperience,
+                ProfilePhoto = profile.ProfilePhoto,
+                Services = profile.WorkerServices?
+                    .Select(ws => ws.Service.Name)
+                    .ToList() ?? new List<string>(),
+                Photos = profile.WorkerPhotos?
+                    .Select(p => new WorkerPhotoDto
+                    {
+                        Id = p.Id,
+                        ImageUrl = p.ImageUrl,
+                        Description = p.Description
+                    })
+                    .ToList() ?? new List<WorkerPhotoDto>()
+            };
+
+            return Ok(dto);
         }
 
         // POST

@@ -25,10 +25,16 @@ namespace SkillHire.Controllers
         public async Task<IActionResult> GetWorkerPhotos()
         {
             var photos = await _context.WorkerPhotos
-                .Include(wp => wp.WorkerProfile) 
                 .ToListAsync();
 
-            return Ok(photos);
+            var dtoList = photos.Select(p => new WorkerPhotoDto
+            {
+                Id = p.Id,
+                ImageUrl = p.ImageUrl,
+                Description = p.Description
+            }).ToList();
+
+            return Ok(dtoList);
         }
 
 
@@ -38,25 +44,36 @@ namespace SkillHire.Controllers
         public async Task<IActionResult> GetWorkerPhoto(int id)
         {
             var photo = await _context.WorkerPhotos
-                .Include(wp => wp.WorkerProfile)
-                .FirstOrDefaultAsync(wp => wp.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (photo == null) return NotFound();
-            return Ok(photo);
+
+            var dto = new WorkerPhotoDto
+            {
+                Id = photo.Id,
+                ImageUrl = photo.ImageUrl,
+                Description = photo.Description
+            };
+
+            return Ok(dto);
         }
 
         //Get all photos for a specific worker profile
         [HttpGet("by-profile/{workerProfileId}")]
         public async Task<IActionResult> GetPhotosByWorkerProfile(int workerProfileId)
         {
-            var profile = await _context.WorkerProfiles.FindAsync(workerProfileId);
-            if (profile == null) return NotFound("Worker profile not found.");
-
             var photos = await _context.WorkerPhotos
-                .Where(wp => wp.WorkerProfileId == workerProfileId)
+                .Where(p => p.WorkerProfileId == workerProfileId)
                 .ToListAsync();
 
-            return Ok(photos);
+            var dtoList = photos.Select(p => new WorkerPhotoDto
+            {
+                Id = p.Id,
+                ImageUrl = p.ImageUrl,
+                Description = p.Description
+            }).ToList();
+
+            return Ok(dtoList);
         }
 
 

@@ -22,12 +22,18 @@ namespace SkillHire.Controllers
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> GetWorkerServices()
         {
-            var workerServices = await _context.WorkerServices
-                .Include(ws => ws.WorkerProfile)
+            var services = await _context.WorkerServices
                 .Include(ws => ws.Service)
                 .ToListAsync();
 
-            return Ok(workerServices);
+            var dtoList = services.Select(ws => new WorkerServiceDto
+            {
+                WorkerProfileId = ws.WorkerProfileId,
+                ServiceId = ws.ServiceId,
+                ServiceName = ws.Service.Name
+            }).ToList();
+
+            return Ok(dtoList);
         }
 
         // GET id
@@ -35,13 +41,20 @@ namespace SkillHire.Controllers
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> GetWorkerService(int workerProfileId, int serviceId)
         {
-            var workerService = await _context.WorkerServices
-                .Include(ws => ws.WorkerProfile)
-                .Include(ws => ws.Service)
+            var ws = await _context.WorkerServices
+                .Include(w => w.Service)
                 .FirstOrDefaultAsync(ws => ws.WorkerProfileId == workerProfileId && ws.ServiceId == serviceId);
 
-            if (workerService == null) return NotFound();
-            return Ok(workerService);
+            if (ws == null) return NotFound();
+
+            var dto = new WorkerServiceDto
+            {
+                WorkerProfileId = ws.WorkerProfileId,
+                ServiceId = ws.ServiceId,
+                ServiceName = ws.Service.Name
+            };
+
+            return Ok(dto);
         }
 
         // POST

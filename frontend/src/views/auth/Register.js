@@ -1,31 +1,27 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
 import axios from "axios";
 
 export default function Register() {
-  const history = useHistory();
-
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     surname: "",
     personalNumber: "",
     username: "",
     email: "",
     password: "",
-    role: "Worker", 
+    role: "Client",
   });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleRegister = async () => {
     try {
-      await axios.post("https://localhost:7109/api/Auth/register", form);
-      history.push("/login");
+      const res = await axios.post("https://localhost:7109/api/Auth/register", formData);
+      alert("Registration successful!");
     } catch (err) {
-      console.error("Registration failed", err);
-      alert("Something went wrong during registration.");
+      alert("Registration failed: " + (err.response?.data || err.message));
     }
   };
 
@@ -37,11 +33,19 @@ export default function Register() {
             <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-200 border-0">
               <div className="rounded-t mb-0 px-6 py-6">
                 <div className="text-center mb-3">
-                  <h6 className="text-blueGray-500 text-sm font-bold">Sign up with</h6>
+                  <h6 className="text-blueGray-500 text-sm font-bold">
+                    Sign up with
+                  </h6>
                 </div>
                 <div className="btn-wrapper text-center">
-                  <button className="bg-white ...">{/* GitHub */}</button>
-                  <button className="bg-white ...">{/* Google */}</button>
+                  <button className="bg-white ...">
+                    <img alt="..." className="w-5 mr-1" src={require("assets/img/github.svg").default} />
+                    Github
+                  </button>
+                  <button className="bg-white ...">
+                    <img alt="..." className="w-5 mr-1" src={require("assets/img/google.svg").default} />
+                    Google
+                  </button>
                 </div>
                 <hr className="mt-6 border-b-1 border-blueGray-300" />
               </div>
@@ -49,58 +53,118 @@ export default function Register() {
                 <div className="text-blueGray-400 text-center mb-3 font-bold">
                   <small>Or sign up with credentials</small>
                 </div>
-                <form onSubmit={(e) => e.preventDefault()}>
+                <form>
+
+                  {/* Name */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Name</label>
-                    <input name="name" type="text" value={form.name} onChange={handleChange} className="..." placeholder="Name" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Name</label>
+                    <input
+                      name="name"
+                      onChange={handleChange}
+                      type="text"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Name"
+                    />
                   </div>
 
+                  {/* Surname */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Surname</label>
-                    <input name="surname" type="text" value={form.surname} onChange={handleChange} className="..." placeholder="Surname" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Surname</label>
+                    <input
+                      name="surname"
+                      onChange={handleChange}
+                      type="text"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Surname"
+                    />
                   </div>
 
+                  {/* Username */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Personal Number</label>
-                    <input name="personalNumber" type="text" value={form.personalNumber} onChange={handleChange} className="..." placeholder="Personal Number" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Username</label>
+                    <input
+                      name="username"
+                      onChange={handleChange}
+                      type="text"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Username"
+                    />
                   </div>
 
+                  {/* Personal Number */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Username</label>
-                    <input name="username" type="text" value={form.username} onChange={handleChange} className="..." placeholder="Username" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Personal Number</label>
+                    <input
+                      name="personalNumber"
+                      onChange={handleChange}
+                      type="text"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Personal Number"
+                    />
                   </div>
 
+                  {/* Email */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Email</label>
-                    <input name="email" type="email" value={form.email} onChange={handleChange} className="..." placeholder="Email" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Email</label>
+                    <input
+                      name="email"
+                      onChange={handleChange}
+                      type="email"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Email"
+                    />
                   </div>
 
+                  {/* Password */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Password</label>
-                    <input name="password" type="password" value={form.password} onChange={handleChange} className="..." placeholder="Password" required />
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Password</label>
+                    <input
+                      name="password"
+                      onChange={handleChange}
+                      type="password"
+                      className="border-0 px-3 py-3 ..."
+                      placeholder="Password"
+                    />
                   </div>
 
+                  {/* Role Selection */}
                   <div className="relative w-full mb-3">
-                    <label className="block uppercase ...">Role</label>
-                    <select name="role" value={form.role} onChange={handleChange} className="..." required>
-                      <option value="Worker">Worker</option>
+                    <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">Role</label>
+                    <select
+                      name="role"
+                      onChange={handleChange}
+                      className="border-0 px-3 py-3 text-sm rounded shadow focus:outline-none focus:ring w-full"
+                      value={formData.role}
+                    >
                       <option value="Client">Client</option>
-                      <option value="Admin">Admin</option>
+                      <option value="Worker">Worker</option>
                     </select>
                   </div>
 
+                  {/* Checkbox */}
                   <div>
                     <label className="inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="form-checkbox ..." />
+                      <input
+                        id="customCheckLogin"
+                        type="checkbox"
+                        className="form-checkbox border-0 rounded text-blueGray-700 ml-1 w-5 h-5"
+                      />
                       <span className="ml-2 text-sm font-semibold text-blueGray-600">
                         I agree with the{" "}
-                        <a href="#" className="text-lightBlue-500">Privacy Policy</a>
+                        <a href="#pablo" className="text-lightBlue-500" onClick={(e) => e.preventDefault()}>
+                          Privacy Policy
+                        </a>
                       </span>
                     </label>
                   </div>
 
+                  {/* Submit Button */}
                   <div className="text-center mt-6">
-                    <button onClick={handleRegister} className="bg-blueGray-800 text-white ..." type="button">
+                    <button
+                      type="button"
+                      onClick={handleRegister}
+                      className="bg-blueGray-800 text-white ..."
+                    >
                       Create Account
                     </button>
                   </div>
