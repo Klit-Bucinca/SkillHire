@@ -11,107 +11,68 @@ namespace SkillHire.Controllers
     public class WorkerServiceController : ControllerBase
     {
         private readonly AppDbContext _context;
+        public WorkerServiceController(AppDbContext ctx) => _context = ctx;
 
-        public WorkerServiceController(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        // GET
         [HttpGet]
-        [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> GetWorkerServices()
+        [Authorize(Roles = "Worker,Admin")]
+        public async Task<IActionResult> GetAll()
         {
-            var services = await _context.WorkerServices
-                .Include(ws => ws.Service)
-                .ToListAsync();
-
-            var dtoList = services.Select(ws => new WorkerServiceDto
+            var list = await _context.WorkerServices.ToListAsync();
+            return Ok(list.Select(ws => new WorkerServiceDto
             {
                 WorkerProfileId = ws.WorkerProfileId,
-                ServiceId = ws.ServiceId,
-                ServiceName = ws.Service.Name
-            }).ToList();
-
-            return Ok(dtoList);
+                ServiceId = ws.ServiceId
+            }));
         }
 
-        // GET id
-        [HttpGet("{workerProfileId}/{serviceId}")]
+        [HttpGet("{profileId:int}/{serviceId:int}")]
+        [Authorize(Roles = "Worker,Admin")]
+        public async Task<IActionResult> Get(int profileId, int serviceId)
+        {
+            var exists = await _context.WorkerServices
+                .AnyAsync(ws => ws.WorkerProfileId == profileId && ws.ServiceId == serviceId);
+
+            return exists
+                ? Ok(new WorkerServiceDto { WorkerProfileId = profileId, ServiceId = serviceId })
+                : NotFound();
+        }
+
+        [HttpPost]
         [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> GetWorkerService(int workerProfileId, int serviceId)
+        public async Task<IActionResult> Add([FromBody] WorkerServiceDto dto)
+        {
+            if (!ModelState.IsValid)                      
+                return BadRequest(ModelState);
+
+            bool exists = await _context.WorkerServices.AnyAsync(ws =>
+                ws.WorkerProfileId == dto.WorkerProfileId &&
+                ws.ServiceId == dto.ServiceId);
+
+            if (exists)
+                return BadRequest("Service already added to this worker.");
+
+            _context.WorkerServices.Add(new WorkerService
+            {
+                WorkerProfileId = dto.WorkerProfileId,
+                ServiceId = dto.ServiceId
+            });
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Service added." });
+        }
+
+        [HttpDelete("{profileId:int}/{serviceId:int}")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> Delete(int profileId, int serviceId)
         {
             var ws = await _context.WorkerServices
-                .Include(w => w.Service)
-                .FirstOrDefaultAsync(ws => ws.WorkerProfileId == workerProfileId && ws.ServiceId == serviceId);
+                .FirstOrDefaultAsync(x => x.WorkerProfileId == profileId && x.ServiceId == serviceId);
 
             if (ws == null) return NotFound();
 
-            var dto = new WorkerServiceDto
-            {
-                WorkerProfileId = ws.WorkerProfileId,
-                ServiceId = ws.ServiceId,
-                ServiceName = ws.Service.Name
-            };
-
-            return Ok(dto);
-        }
-
-        // POST
-        [HttpPost]
-        [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> CreateWorkerService([FromBody] WorkerService workerService)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            _context.WorkerServices.Add(workerService);
+            _context.WorkerServices.Remove(ws);
             await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetWorkerService),
-                new { workerProfileId = workerService.WorkerProfileId, serviceId = workerService.ServiceId },
-                workerService);
-        }
-
-        // PUT
-        [HttpPut("{workerProfileId}/{serviceId}")]
-        [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> UpdateWorkerService(int workerProfileId, int serviceId, [FromBody] WorkerService workerService)
-        {
-            if (workerProfileId != workerService.WorkerProfileId || serviceId != workerService.ServiceId)
-                return BadRequest();
-
-            _context.Entry(workerService).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.WorkerServices.Any(ws =>
-                    ws.WorkerProfileId == workerProfileId && ws.ServiceId == serviceId))
-                    return NotFound();
-
-                throw;
-            }
-
-            return NoContent();
-        }
-
-        // DELETE
-        [HttpDelete("{workerProfileId}/{serviceId}")]
-        [Authorize(Roles = "Worker")]
-        public async Task<IActionResult> DeleteWorkerService(int workerProfileId, int serviceId)
-        {
-            var workerService = await _context.WorkerServices
-                .FirstOrDefaultAsync(ws => ws.WorkerProfileId == workerProfileId && ws.ServiceId == serviceId);
-
-            if (workerService == null) return NotFound();
-
-            _context.WorkerServices.Remove(workerService);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(new { message = "Service removed." });
         }
     }
 }

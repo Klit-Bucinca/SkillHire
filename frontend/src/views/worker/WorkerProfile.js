@@ -149,21 +149,19 @@ export default function WorkerProfilePage() {
           ))}
 
           {/* Services */}
-          <div>
-            <label className="block font-semibold mb-2 text-gray-700">Services Offered:</label>
-            <select
-              multiple
-              value={profile.services}
-              onChange={handleServiceChange}
-              className="w-full px-4 py-2 border rounded-md h-40 bg-white shadow-sm"
-            >
-              {allServices.map((svc) => (
-                <option key={svc.id} value={svc.name}>
-                  {svc.name}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div>
+            <h4 className="font-semibold mb-2 text-gray-700">Services Offered:</h4>
+
+            {profile.services?.length ? (
+                <ul className="list-disc list-inside space-y-1">
+                {profile.services.map((svc) => (
+                    <li key={svc}>{svc}</li>
+                ))}
+                </ul>
+            ) : (
+                <p className="text-gray-500">No services added yet.</p>
+            )}
+            </div>
 
           {/* Gallery */}
           {profile.photos && profile.photos.length > 0 && (

@@ -1,131 +1,189 @@
-import React, { useEffect, useState } from "react";
+/* eslint-disable */
+import React, { useEffect, useState, useMemo } from "react";
 import api from "utils/axiosInstance";
+
+const msg = (err) =>
+  err?.response?.data?.message ??
+  (typeof err?.response?.data === "object"
+    ? JSON.stringify(err.response.data)
+    : err?.response?.data) ??
+  err?.message ??
+  "Unexpected error";
 
 export default function MyServices() {
   const user = JSON.parse(localStorage.getItem("user"));
+
+
   const [allServices, setAllServices] = useState([]);
-  const [myServices, setMyServices] = useState([]);
-  const [selectedServiceId, setSelectedServiceId] = useState(null);
+  const [categories, setCategories]   = useState([]);
+
   const [profileId, setProfileId] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [myNames,   setMyNames]   = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [serviceRes, categoryRes, profileRes] = await Promise.all([
-          api.get("/Service"),
-          api.get("/Category"),
-          api.get(`/WorkerProfile/user/${user.id}`),
-        ]);
+  const [pickId, setPickId] = useState(null);
+  const [busy,   setBusy]   = useState(false);
 
-        setAllServices(serviceRes.data);
-        setCategories(categoryRes.data);
-        setMyServices(profileRes.data.services);
-        setProfileId(profileRes.data.id);
-      } catch (err) {
-        console.error("Error loading data", err);
-      }
-    };
+  /* sort */
+  const [sortBy,  setSortBy]  = useState("name");  
+  const [sortDir, setSortDir] = useState("asc");  
 
-    fetchData();
-  }, [user.id]);
 
-  const handleAddService = async () => {
-    const selectedService = allServices.find((s) => s.id === selectedServiceId);
-    if (!selectedService || myServices.includes(selectedService.name)) return;
+  const load = async () => {
+    const [svc, cat, prof] = await Promise.all([
+      api.get("/Service"),
+      api.get("/Category"),
+      api.get(`/WorkerProfile/user/${user.id}`),
+    ]);
+    setAllServices(svc.data);
+    setCategories(cat.data);
+    setProfileId(prof.data.id);
+    setMyNames(prof.data.services);
+    setPickId(null);
+  };
+  useEffect(() => { load(); }, []);
 
+
+  const sorted = useMemo(() => {
+    const keyed = allServices.map((s) => ({
+      ...s,
+      categoryName: categories.find((c) => c.id === s.categoryId)?.name ?? "",
+    }));
+    const dir = sortDir === "asc" ? 1 : -1;
+    return keyed.sort((a, b) => {
+      const A = sortBy === "name" ? a.name : a.categoryName;
+      const B = sortBy === "name" ? b.name : b.categoryName;
+      return A.localeCompare(B) * dir;
+    });
+  }, [allServices, categories, sortBy, sortDir]);
+
+ 
+  const onAdd = async () => {
+    const svc = allServices.find((s) => s.id === pickId);
+    if (!svc || myNames.includes(svc.name)) return;
+    setBusy(true);
     try {
       await api.post("/WorkerService", {
         workerProfileId: profileId,
-        serviceName: selectedService.id,
+        serviceId: svc.id,
       });
-
-      setMyServices((prev) => [...prev, selectedService.name]);
-      setSelectedServiceId(null);
+      await load();
     } catch (err) {
-      console.error("Error adding service", err);
+      alert(msg(err));
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleRemoveService = async (serviceName) => {
+
+  const onRemove = async (name) => {
+    const svc = allServices.find((s) => s.name === name);
+    if (!svc) return;
+    setBusy(true);
     try {
-      await api.delete("/WorkerService", {
-        data: {
-          workerProfileId: profileId,
-          serviceName,
-        },
-      });
-      setMyServices((prev) => prev.filter((s) => s !== serviceName));
+      await api.delete(`/WorkerService/${profileId}/${svc.id}`);
+      await load();
     } catch (err) {
-      console.error("Error removing service", err);
+      alert(msg(err));
+    } finally {
+      setBusy(false);
     }
   };
+
 
   return (
-    <div className="p-6">
+
+    <div className="min-h-screen pt-32 px-4 md:px-10 w-full">
       <h2 className="text-xl font-semibold mb-6">Manage Your Services</h2>
 
-      {/* Section 1: Select from all existing services */}
-      <div className="bg-white rounded shadow p-4 mb-10">
-        <h3 className="font-medium mb-3">Available Services</h3>
-        <div className="overflow-x-auto">
+      {/* ───────── Available services ─────────────────── */}
+      <div className="bg-white rounded shadow p-4 mb-10 w-full">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium">Available Services</h3>
+
+          <div className="space-x-2 text-sm">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border rounded px-4 py-1"
+            >
+              <option value="name">Service name</option>
+              <option value="category">Category name</option>
+            </select>
+            <select
+              value={sortDir}
+              onChange={(e) => setSortDir(e.target.value)}
+              className="border rounded px-5 py-1"
+            >
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto max-h-80">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b">
-                <th className="py-2 px-4">Select</th>
+                <th className="py-2 px-4">Pick</th>
                 <th className="py-2 px-4">Service</th>
                 <th className="py-2 px-4">Category</th>
               </tr>
             </thead>
             <tbody>
-              {allServices.map((service) => (
-                <tr key={service.id} className="border-b">
+              {sorted.map((s) => (
+                <tr key={s.id} className="border-b">
                   <td className="py-2 px-4">
                     <input
                       type="radio"
-                      name="selectedService"
-                      value={service.id}
-                      checked={selectedServiceId === service.id}
-                      onChange={() => setSelectedServiceId(service.id)}
+                      checked={pickId === s.id}
+                      onChange={() => setPickId(s.id)}
                     />
                   </td>
-                  <td className="py-2 px-4">{service.name}</td>
+                  <td className="py-2 px-4">{s.name}</td>
                   <td className="py-2 px-4">
-                    {categories.find((c) => c.id === service.categoryId)?.name || "Uncategorized"}
+                    {categories.find((c) => c.id === s.categoryId)?.name ?? "-"}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
         <button
-          onClick={handleAddService}
-          className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded"
+          onClick={onAdd}
+          disabled={!profileId || !pickId || busy}
+          className={`mt-4 px-4 py-2 rounded text-white ${
+            profileId && pickId && !busy
+              ? "bg-emerald-500 hover:bg-emerald-600"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
         >
-          Add Selected Service
+          {busy ? "Working…" : "Add selected"}
         </button>
       </div>
 
-      {/* Section 2: My services table */}
-      <div className="bg-white rounded shadow p-4">
+      {/* ───────── Services you offer ─────────────────── */}
+      <div className="bg-white rounded shadow p-4 w-full">
         <h3 className="font-medium mb-3">Services You Offer</h3>
-        {myServices.length === 0 ? (
+
+        {myNames.length === 0 ? (
           <p className="text-gray-500">You haven’t added any services yet.</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b">
                 <th className="py-2 text-left">Service</th>
-                <th></th>
+                <th className="w-24"></th>
               </tr>
             </thead>
             <tbody>
-              {myServices.map((svc, idx) => (
-                <tr key={idx} className="border-b">
-                  <td className="py-2">{svc}</td>
+              {myNames.map((n) => (
+                <tr key={n} className="border-b">
+                  <td className="py-2">{n}</td>
                   <td>
                     <button
-                      onClick={() => handleRemoveService(svc)}
+                      onClick={() => onRemove(n)}
+                      disabled={busy}
                       className="text-red-500 hover:text-red-700 text-sm"
                     >
                       Remove
