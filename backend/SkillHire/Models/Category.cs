@@ -9,6 +9,6 @@ namespace SkillHire.Models
         [Required]
         public string Name { get; set; }
 
-        public ICollection<Service> Services { get; set; }
+        public ICollection<Service>? Services { get; set; }
     }
 }

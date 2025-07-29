@@ -13,10 +13,23 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       const res = await axios.post("https://localhost:7109/api/Auth/login", formData);
+
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data));
+
+       const role = res.data.role;
+      
       alert("Login successful!");
-      history.push("/admin/dashboard");
+
+      if (role === "Admin") {
+        history.push("/admin/dashboard");
+      } else if (role === "Client") {
+        history.push("/client/dashboard");
+      } else if (role === "Worker") {
+        history.push("/worker/dashboard");
+      } else {
+        history.push("/auth/login");
+      }
     } catch (err) {
       alert("Login failed: " + (err.response?.data || err.message));
     }

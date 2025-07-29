@@ -56,7 +56,7 @@ namespace SkillHire.Controllers
 
         // POST
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Worker")]
         public async Task<IActionResult> CreateService([FromBody] Service service)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

@@ -14,10 +14,15 @@ export default function Categories() {
   };
 
   const handleAdd = async () => {
-    if (!newName.trim()) return;
+  if (!newName.trim()) return;
+  try {
     await api.post(categoryUrl, { name: newName });
     setNewName("");
     fetchCategories();
+  } catch (err) {
+    console.error("POST /Category failed:", err.response?.data || err.message);
+    alert("Add category failed: " + (err.response?.data || err.message));
+  }
   };
 
   const handleUpdate = async (id, name) => {

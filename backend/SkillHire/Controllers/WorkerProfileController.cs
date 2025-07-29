@@ -89,6 +89,42 @@ namespace SkillHire.Controllers
             return Ok(dto);
         }
 
+        [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Worker,Admin")]
+        public async Task<IActionResult> GetWorkerProfileByUserId(int userId)
+        {
+            var profile = await _context.WorkerProfiles
+                .Include(wp => wp.User)
+                .Include(wp => wp.WorkerServices).ThenInclude(ws => ws.Service)
+                .Include(wp => wp.WorkerPhotos)
+                .FirstOrDefaultAsync(wp => wp.UserId == userId);
+
+            if (profile == null) return NotFound();
+
+            var dto = new WorkerProfileDto
+            {
+                Id = profile.Id,
+                UserId = profile.UserId,
+                City = profile.City,
+                Phone = profile.Phone,
+                YearsExperience = profile.YearsExperience,
+                ProfilePhoto = profile.ProfilePhoto,
+                Services = profile.WorkerServices?
+                    .Select(ws => ws.Service.Name)
+                    .ToList() ?? new List<string>(),
+                Photos = profile.WorkerPhotos?
+                    .Select(p => new WorkerPhotoDto
+                    {
+                        Id = p.Id,
+                        ImageUrl = p.ImageUrl,
+                        Description = p.Description
+                    })
+                    .ToList() ?? new List<WorkerPhotoDto>()
+            };
+
+            return Ok(dto);
+        }
+
         // POST
         [HttpPost]
         [Authorize(Roles = "Worker")]

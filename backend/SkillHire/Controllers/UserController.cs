@@ -24,6 +24,15 @@ namespace SkillHire.Controllers
             return Ok(_context.Users.ToList());
         }
 
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Worker,Client")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
         // POST
         [HttpPost]
         public IActionResult CreateUser(User user)

@@ -104,6 +104,21 @@ namespace SkillHire.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            if (request.Role == "Worker")
+            {
+                var workerProfile = new WorkerProfile
+                {
+                    UserId = user.Id,
+                    Phone = "",
+                    City = "",
+                    YearsExperience = 0,
+                    ProfilePhoto = "/uploads/profile-photos/default.jpg"
+                };
+
+                _context.WorkerProfiles.Add(workerProfile);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(new
             {
                 message = "User registered successfully.",

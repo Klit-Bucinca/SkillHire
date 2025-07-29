@@ -17,13 +17,33 @@ export default function Register() {
   };
 
   const handleRegister = async () => {
-    try {
-      const res = await axios.post("https://localhost:7109/api/Auth/register", formData);
-      alert("Registration successful!");
-    } catch (err) {
-      alert("Registration failed: " + (err.response?.data || err.message));
+  try {
+    await axios.post("https://localhost:7109/api/Auth/register", formData);
+
+    const loginRes = await axios.post("https://localhost:7109/api/Auth/login", {
+      username: formData.username,
+      password: formData.password,
+    });
+
+    localStorage.setItem("token", loginRes.data.token);
+    localStorage.setItem("user", JSON.stringify(loginRes.data));
+
+    alert("Registration + login successful!");
+
+    const role = loginRes.data.role;
+    if (role === "Admin") {
+      window.location.href = "/admin/dashboard";
+    } else if (role === "Client") {
+      window.location.href = "/client/dashboard";
+    } else if (role === "Worker") {
+      window.location.href = "/worker/dashboard";
+    } else {
+      window.location.href = "/auth/login";
     }
-  };
+  } catch (err) {
+    alert("Registration or login failed: " + (err.response?.data || err.message));
+  }
+};
 
   return (
     <>
