@@ -90,11 +90,11 @@ export default function WorkerProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 py-12 px-4">
-      <div className="max-w-4xl mx-auto shadow-xl rounded-xl overflow-hidden bg-white/70 backdrop-blur-lg">
+      <div className="max-w-4xl mx-auto mt-4 shadow-xl rounded-xl overflow-hidden bg-white/70 backdrop-blur-lg">
         {/* Header */}
         <div className="relative h-48 bg-gradient-to-r from-purple-600 to-pink-600">
           <div className="absolute inset-0 bg-black/30"></div>
-          <div className="absolute bottom-[-50px] left-1/2 transform -translate-x-1/2">
+          <div className="absolute bottom-[-50px] left-1/2 transform -translate-x-1/2 mt-8">
             <img
               src={
                 profile.profilePhoto

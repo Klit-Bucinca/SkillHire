@@ -116,7 +116,7 @@ export default function Sidebar() {
                 >
                   <i
                     className={
-                      "fas fa-tools mr-2 text-sm " +
+                      "fas fa-users mr-2 text-sm " +
                       (window.location.href.includes("/worker/settings")
                         ? "opacity-75"
                         : "text-blueGray-300")
@@ -139,13 +139,35 @@ export default function Sidebar() {
                 >
                   <i
                     className={
-                      "fas fa-table mr-2 text-sm " +
+                      "fas fa-user-cog mr-2 text-sm " +
                       (window.location.href.includes("/worker/WorkerProfile")
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
                   ></i>{" "}
                   WorkerProfile
+                </Link>
+              </li>
+
+              <li className="items-center">
+                <Link
+                  className={
+                    "text-xs uppercase py-3 font-bold block " +
+                    (window.location.href.includes("/worker/MyPhotos")
+                      ? "text-lightBlue-500 hover:text-lightBlue-600"
+                      : "text-blueGray-700 hover:text-blueGray-500")
+                  }
+                  to="/worker/MyPhotos"
+                >
+                  <i
+                    className={
+                      "fas fa-file-alt mr-2 text-sm " +
+                      (window.location.href.includes("/worker/MyPhotos")
+                        ? "opacity-75"
+                        : "text-blueGray-300")
+                    }
+                  ></i>{" "}
+                  MyPhotos
                 </Link>
               </li>
             </ul>

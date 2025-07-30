@@ -11,6 +11,7 @@ import Dashboard from "views/worker/Dashboard.js";
 import MyServices from "views/worker/MyServices.js";
 import MyClients from "views/worker/MyClients.js";
 import WorkerProfile from "views/worker/WorkerProfile.js";
+import MyPhotos from "views/worker/MyPhotos";
 
 export default function Worker() {
   return (
@@ -25,6 +26,7 @@ export default function Worker() {
             <Route path="/worker/MyServices" exact component={MyServices} />
             <Route path="/worker/MyClients" exact component={MyClients} />
             <Route path="/worker/WorkerProfile" exact component={WorkerProfile} />
+            <Route path="/worker/MyPhotos" exact component={MyPhotos} />
             <Redirect from="/worker" to="/worker/dashboard" />
           </Switch>
           <FooterAdmin />
