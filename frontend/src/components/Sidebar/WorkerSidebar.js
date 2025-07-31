@@ -103,7 +103,6 @@ export default function Sidebar() {
                 </Link>
               </li>
 
-              {/* My Clients (FIXED to /worker/settings) */}
               <li className="items-center">
                 <Link
                   className={
@@ -126,7 +125,6 @@ export default function Sidebar() {
                 </Link>
               </li>
 
-              {/* Tables (FIXED to /worker/tables) */}
               <li className="items-center">
                 <Link
                   className={

@@ -112,7 +112,7 @@ export default function MyServices() {
             <select
               value={sortDir}
               onChange={(e) => setSortDir(e.target.value)}
-              className="border rounded px-5 py-1"
+              className="border rounded px-7 py-1"
             >
               <option value="asc">A → Z</option>
               <option value="desc">Z → A</option>
@@ -167,7 +167,7 @@ export default function MyServices() {
         <h3 className="font-medium mb-3">Services You Offer</h3>
 
         {myNames.length === 0 ? (
-          <p className="text-gray-500">You haven’t added any services yet.</p>
+          <p className="text-gray-500">You haven't added any services yet.</p>
         ) : (
           <table className="w-full">
             <thead>

@@ -1,9 +1,12 @@
+
 import React, { useEffect, useState } from "react";
 import api from "utils/axiosInstance";
 
 const backendUrl = "https://localhost:7109";
 
 export default function WorkerProfilePage() {
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const [profile, setProfile] = useState({
     userId: "",
     fullName: "",
@@ -13,22 +16,23 @@ export default function WorkerProfilePage() {
     yearsExperience: "",
     profilePhoto: "",
     services: [],
-    photos: [],
   });
   const [allServices, setAllServices] = useState([]);
   const [editMode, setEditMode] = useState({});
-  const user = JSON.parse(localStorage.getItem("user"));
+
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
-        const profileRes = await api.get(`/WorkerProfile/user/${user.id}`);
-        const userRes = await api.get(`/Users/${user.id}`);
-        const serviceRes = await api.get(`/Service`);
+        const [profileRes, userRes, serviceRes] = await Promise.all([
+          api.get(`/WorkerProfile/user/${user.id}`),
+          api.get(`/Users/${user.id}`),
+          api.get(`/Service`),
+        ]);
 
         setProfile((prev) => ({
           ...prev,
-          ...profileRes.data,
+          ...profileRes.data, 
           fullName: `${userRes.data.name} ${userRes.data.surname}`,
           email: userRes.data.email,
         }));
@@ -44,9 +48,9 @@ export default function WorkerProfilePage() {
       } catch (err) {
         console.error("Error loading profile:", err);
       }
-    };
-    fetchData();
+    })();
   }, [user.id]);
+
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
@@ -81,13 +85,15 @@ export default function WorkerProfilePage() {
 
     try {
       const res = await api.post(`/WorkerProfile/${profile.id}/upload-photo`, formData);
-      console.log("Response from upload:", res.data);
       setProfile((prev) => ({ ...prev, profilePhoto: res.data.photoUrl }));
     } catch (err) {
       console.error("Upload failed:", err);
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 py-12 px-4">
       <div className="max-w-4xl mx-auto mt-4 shadow-xl rounded-xl overflow-hidden bg-white/70 backdrop-blur-lg">
@@ -109,6 +115,7 @@ export default function WorkerProfilePage() {
 
         {/* Content */}
         <div className="mt-20 px-8 pb-10 space-y-8">
+          {/* Upload profile photo */}
           <div className="text-center">
             <input
               type="file"
@@ -117,7 +124,7 @@ export default function WorkerProfilePage() {
             />
           </div>
 
-          {/* Fields */}
+          {/* Editable fields */}
           {["fullName", "email", "phone", "city", "yearsExperience"].map((field) => (
             <div key={field} className="flex flex-col md:flex-row md:items-center gap-2">
               <label className="w-40 font-medium capitalize text-gray-700">
@@ -148,37 +155,20 @@ export default function WorkerProfilePage() {
             </div>
           ))}
 
-          {/* Services */}
-            <div>
+          {/* Services list */}
+          <div>
             <h4 className="font-semibold mb-2 text-gray-700">Services Offered:</h4>
 
             {profile.services?.length ? (
-                <ul className="list-disc list-inside space-y-1">
+              <ul className="list-disc list-inside space-y-1">
                 {profile.services.map((svc) => (
-                    <li key={svc}>{svc}</li>
+                  <li key={svc}>{svc}</li>
                 ))}
-                </ul>
+              </ul>
             ) : (
-                <p className="text-gray-500">No services added yet.</p>
+              <p className="text-gray-500">No services added yet.</p>
             )}
-            </div>
-
-          {/* Gallery */}
-          {profile.photos && profile.photos.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-gray-700 mb-3">Your Work Portfolio:</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {profile.photos.map((photo) => (
-                  <div key={photo.id} className="bg-white rounded-lg shadow overflow-hidden">
-                    <img src={photo.imageUrl} alt="Work" className="w-full h-36 object-cover" />
-                    {photo.description && (
-                      <p className="p-2 text-sm text-gray-600">{photo.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
