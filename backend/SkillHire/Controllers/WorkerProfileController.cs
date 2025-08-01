@@ -33,6 +33,8 @@ namespace SkillHire.Controllers
             {
                 Id = profile.Id,
                 UserId = profile.UserId,
+                Name = profile.User?.Name,
+                Surname = profile.User?.Surname,
                 City = profile.City,
                 Phone = profile.Phone,
                 YearsExperience = profile.YearsExperience,
@@ -69,6 +71,8 @@ namespace SkillHire.Controllers
             {
                 Id = profile.Id,
                 UserId = profile.UserId,
+                Name = profile.User?.Name,
+                Surname = profile.User?.Surname,
                 City = profile.City,
                 Phone = profile.Phone,
                 YearsExperience = profile.YearsExperience,
@@ -105,6 +109,8 @@ namespace SkillHire.Controllers
             {
                 Id = profile.Id,
                 UserId = profile.UserId,
+                Name = profile.User?.Name,
+                Surname = profile.User?.Surname,
                 City = profile.City,
                 Phone = profile.Phone,
                 YearsExperience = profile.YearsExperience,

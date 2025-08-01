@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using SkillHire.Data;
 using SkillHire.Dtos;
 using SkillHire.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SkillHire.Controllers
 {
@@ -14,11 +17,11 @@ namespace SkillHire.Controllers
         private readonly AppDbContext _ctx;
         public HireController(AppDbContext ctx) => _ctx = ctx;
 
+
         [HttpPost]
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> CreateHire([FromBody] HireCreateDto dto)
         {
-            
             if (!await _ctx.Users.AnyAsync(u => u.Id == dto.ClientId && u.Role == "Client"))
                 return BadRequest("Client not found.");
 
@@ -49,17 +52,27 @@ namespace SkillHire.Controllers
             Status = h.Status
         };
 
+
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<HireDto>>> GetAll()
         {
             var list = await _ctx.Hires
                 .AsNoTracking()
-                .Select(ToDto)
+                .Select(h => new HireDto  
+                {
+                    Id = h.Id,
+                    ClientId = h.ClientId,
+                    WorkerId = h.WorkerId,
+                    Date = h.Date,
+                    Notes = h.Notes,
+                    Status = h.Status
+                })
                 .ToListAsync();
 
             return Ok(list);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetHireById(int id)
@@ -68,6 +81,7 @@ namespace SkillHire.Controllers
             return hire == null ? NotFound() : Ok(ToDto(hire));
         }
 
+
         [HttpGet("worker/{workerId}")]
         [Authorize(Roles = "Worker,Admin")]
         public async Task<ActionResult<IEnumerable<HireDto>>> GetForWorker(int workerId)
@@ -75,11 +89,20 @@ namespace SkillHire.Controllers
             var list = await _ctx.Hires
                 .Where(h => h.WorkerId == workerId)
                 .AsNoTracking()
-                .Select(ToDto)
+                .Select(h => new HireDto
+                {
+                    Id = h.Id,
+                    ClientId = h.ClientId,
+                    WorkerId = h.WorkerId,
+                    Date = h.Date,
+                    Notes = h.Notes,
+                    Status = h.Status
+                })
                 .ToListAsync();
 
             return Ok(list);
         }
+
 
         [HttpGet("client/{clientId}")]
         [Authorize(Roles = "Client,Admin")]
@@ -88,7 +111,15 @@ namespace SkillHire.Controllers
             var list = await _ctx.Hires
                 .Where(h => h.ClientId == clientId)
                 .AsNoTracking()
-                .Select(ToDto)
+                .Select(h => new HireDto
+                {
+                    Id = h.Id,
+                    ClientId = h.ClientId,
+                    WorkerId = h.WorkerId,
+                    Date = h.Date,
+                    Notes = h.Notes,
+                    Status = h.Status
+                })
                 .ToListAsync();
 
             return Ok(list);
@@ -101,7 +132,7 @@ namespace SkillHire.Controllers
             var hire = await _ctx.Hires.FindAsync(id);
             if (hire == null) return NotFound();
 
-            var userId = int.Parse(User.FindFirst("id")!.Value);
+            var userId = int.Parse(User.FindFirst("id")!.Value); 
             if (hire.WorkerId != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
