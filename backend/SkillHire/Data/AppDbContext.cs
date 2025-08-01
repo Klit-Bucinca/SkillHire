@@ -13,6 +13,7 @@ namespace SkillHire.Data
         public DbSet<WorkerProfile> WorkerProfiles { get; set; }
         public DbSet<WorkerService> WorkerServices { get; set; }
         public DbSet<WorkerPhoto> WorkerPhotos { get; set; }
+        public DbSet<Hire> Hires { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,19 @@ namespace SkillHire.Data
                 .WithMany(wp => wp.WorkerPhotos)
                 .HasForeignKey(wp => wp.WorkerProfileId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<Hire>()
+                .HasOne(h => h.Client)
+                .WithMany()
+                .HasForeignKey(h => h.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);    
+
+            modelBuilder.Entity<Hire>()
+                .HasOne(h => h.Worker)
+                .WithMany()
+                .HasForeignKey(h => h.WorkerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

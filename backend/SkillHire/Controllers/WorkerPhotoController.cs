@@ -20,9 +20,7 @@ namespace SkillHire.Controllers
             _env     = env;
         }
 
-        // --------------------------------------------------------------------- //
-        // GET: all photos (admin use)
-        // --------------------------------------------------------------------- //
+
         [HttpGet]
         public async Task<IActionResult> GetWorkerPhotos()
         {
@@ -38,9 +36,6 @@ namespace SkillHire.Controllers
             return Ok(dtoList);
         }
 
-        // --------------------------------------------------------------------- //
-        // GET: single photo
-        // --------------------------------------------------------------------- //
         [HttpGet("{id}")]
         public async Task<IActionResult> GetWorkerPhoto(int id)
         {
@@ -55,9 +50,6 @@ namespace SkillHire.Controllers
             });
         }
 
-        // --------------------------------------------------------------------- //
-        // GET: all photos for a specific worker profile
-        // --------------------------------------------------------------------- //
         [HttpGet("by-profile/{workerProfileId}")]
         public async Task<IActionResult> GetPhotosByWorkerProfile(int workerProfileId)
         {
@@ -74,9 +66,6 @@ namespace SkillHire.Controllers
             return Ok(dtoList);
         }
 
-        // --------------------------------------------------------------------- //
-        // POST: create (single)  — rarely used because upload handles most cases
-        // --------------------------------------------------------------------- //
         [HttpPost]
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> CreateWorkerPhoto([FromBody] WorkerPhotoDto dto)
@@ -97,9 +86,6 @@ namespace SkillHire.Controllers
             return CreatedAtAction(nameof(GetWorkerPhoto), new { id = dto.Id }, dto);
         }
 
-        // --------------------------------------------------------------------- //
-        // PUT: update description
-        // --------------------------------------------------------------------- //
         [HttpPut("{id}")]
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> UpdateWorkerPhoto(int id, [FromBody] WorkerPhotoDto dto)
@@ -115,9 +101,6 @@ namespace SkillHire.Controllers
             return NoContent();
         }
 
-        // --------------------------------------------------------------------- //
-        // DELETE
-        // --------------------------------------------------------------------- //
         [HttpDelete("{id}")]
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> DeleteWorkerPhoto(int id)
@@ -131,9 +114,6 @@ namespace SkillHire.Controllers
             return NoContent();
         }
 
-        // --------------------------------------------------------------------- //
-        // POST: upload multiple photos for a worker profile
-        // --------------------------------------------------------------------- //
         [HttpPost("{workerProfileId}/upload")]
         [Authorize(Roles = "Worker")]
         public async Task<IActionResult> UploadWorkerPhotos(
@@ -143,9 +123,7 @@ namespace SkillHire.Controllers
             var profile = await _context.WorkerProfiles.FindAsync(workerProfileId);
             if (profile == null) return NotFound("Worker profile not found.");
 
-            // ----------------------------------------------------------------- //
-            // 1. Parse incoming form data
-            // ----------------------------------------------------------------- //
+
             var files           = form.Files;
             var descriptionsRaw = form["descriptions"];
 
@@ -170,9 +148,7 @@ namespace SkillHire.Controllers
             if (descriptions.Count != 0 && descriptions.Count != files.Count)
                 return BadRequest("Descriptions count must match the number of files.");
 
-            // ----------------------------------------------------------------- //
-            // 2. Save every file to /wwwroot/uploads/worker-photos
-            // ----------------------------------------------------------------- //
+
             var uploadDir = Path.Combine(_env.WebRootPath, "uploads", "worker-photos");
             Directory.CreateDirectory(uploadDir);
 
@@ -202,9 +178,7 @@ namespace SkillHire.Controllers
 
             await _context.SaveChangesAsync();
 
-            // ----------------------------------------------------------------- //
-            // 3. Map entities → DTOs to avoid cyclic-reference serialization
-            // ----------------------------------------------------------------- //
+
             var dtoList = uploadedEntities.Select(e => new WorkerPhotoDto
             {
                 Id          = e.Id,
