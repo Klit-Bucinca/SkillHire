@@ -1,10 +1,21 @@
 /* eslint-disable */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import api from "utils/axiosInstance";
 
 const backendUrl = "https://localhost:7109";
+
+
+function Toast({ message, onClose }) {
+  return (
+    <div className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow-lg flex items-center space-x-4">
+      <span>{message}</span>
+      <Link to="/client/hires" className="underline font-semibold">View My Hires</Link>
+      <button onClick={onClose} className="ml-4 font-bold">×</button>
+    </div>
+  );
+}
 
 export default function HireWorker() {
   const history = useHistory();
@@ -13,6 +24,15 @@ export default function HireWorker() {
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(true);
   const [active, setActive] = useState(null);
+  const [toastMsg, setToastMsg] = useState("");
+  const [pendingHires, setPendingHires] = useState(new Set());
+
+
+  const [city, setCity] = useState("All");
+  const [service, setService] = useState("All");
+  const [minExp, setMinExp] = useState("");
+
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     (async () => {
@@ -28,29 +48,101 @@ export default function HireWorker() {
     })();
   }, []);
 
+  const cityOptions = useMemo(() => {
+    const set = new Set();
+    workers.forEach((w) => w.city && set.add(w.city));
+    return ["City", ...Array.from(set).sort()];
+  }, [workers]);
+
+  const serviceOptions = useMemo(() => {
+    const set = new Set();
+    workers.forEach((w) => (w.services || []).forEach((s) => set.add(s)));
+    return ["Work", ...Array.from(set).sort()];
+  }, [workers]);
+
   useEffect(() => {
     const term = search.toLowerCase();
-    setFiltered(
-      workers.filter((w) => {
-        const full = (w.fullName || "").toLowerCase();
-        const combined = `${w.name || ""} ${w.surname || ""}`.toLowerCase();
-        const city = (w.city || "").toLowerCase();
-        const services = (w.services || []).join(" ").toLowerCase();
-        return full.includes(term) || combined.includes(term) || city.includes(term) || services.includes(term);
-      })
-    );
-  }, [search, workers]);
+
+    const next = workers.filter((w) => {
+      const name = (w.fullName || "").toLowerCase();
+      const wCity = (w.city || "").toLowerCase();
+      const wServices = (w.services || []);
+      const servicesText = wServices.join(" ").toLowerCase();
+
+      const matchesText =
+        name.includes(term) || wCity.includes(term) || servicesText.includes(term);
+
+      const matchesCity = city === "All" || w.city === city;
+
+      const matchesService = service === "All" || wServices.includes(service);
+
+      const expOK =
+        minExp === "" || Number(w.yearsExperience || 0) >= Number(minExp);
+
+      return matchesText && matchesCity && matchesService && expOK;
+    });
+
+    setFiltered(next);
+  }, [search, workers, city, service, minExp]);
+
+  const handleHireSuccess = (name, workerId) => {
+    setToastMsg(`Your hire request for ${name} has been sent!`);
+    setPendingHires((prev) => new Set(prev).add(workerId));
+    setActive(null);
+  };
+
+  const clearFilters = () => {
+    setCity("All");
+    setService("All");
+    setMinExp("");
+    setSearch("");
+  };
 
   return (
     <div className="min-h-screen bg-blueGray-50 pt-32 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-center mb-10">
+        {/* Filters */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search workers…"
-            className="w-full md:w-2/3 px-5 py-3 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-lightBlue-500 bg-white text-sm"
+            className="md:col-span-2 px-4 py-2.5 rounded-lg shadow bg-white focus:outline-none focus:ring-2 focus:ring-lightBlue-500 text-sm"
           />
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="px-3 py-2.5 rounded-lg shadow bg-white text-sm"
+          >
+            {cityOptions.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+            className="px-3 py-2.5 rounded-lg shadow bg-white text-sm"
+          >
+            {serviceOptions.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+          <div className="md:col-span-4 flex items-center gap-3">
+            <input
+              type="number"
+              min="0"
+              value={minExp}
+              onChange={(e) => setMinExp(e.target.value)}
+              placeholder="Min years experience"
+              className="w-48 px-3 py-2 rounded-lg shadow bg-white text-sm focus:outline-none focus:ring-2 focus:ring-lightBlue-500"
+            />
+            <button
+              onClick={clearFilters}
+              className="text-xs px-3 py-2 rounded-lg bg-blueGray-100 hover:bg-blueGray-200"
+            >
+              Clear filters
+            </button>
+          </div>
         </div>
 
         {busy ? (
@@ -60,51 +152,118 @@ export default function HireWorker() {
         ) : (
           <div className="space-y-8 mx-auto max-w-3xl">
             {filtered.map((w) => (
-              <WorkerRow key={w.id} worker={w} onView={() => setActive(w)} />
+              <WorkerRow
+                key={w.id}
+                worker={w}
+                onView={() => setActive(w)}
+                isPending={pendingHires.has(w.id)}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {active && <WorkerModal worker={active} onClose={() => setActive(null)} onHire={() => history.push(`/client/worker/${active.id}`)} />}
+      {active && (
+        <WorkerModal
+          worker={active}
+          clientId={user.id}
+          onClose={() => setActive(null)}
+          onSuccess={handleHireSuccess}
+        />
+      )}
+
+      {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg("")} />}
     </div>
   );
 }
 
-function WorkerModal({ worker, onClose, onHire }) {
-  const displayName = worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim();
-  const photoUrl = worker.profilePhoto ? `${backendUrl}${worker.profilePhoto}` : "/img/placeholder.jpg";
+function WorkerModal({ worker, clientId, onClose, onSuccess }) {
+  const displayName =
+    worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim();
+  const photoUrl = worker.profilePhoto
+    ? `${backendUrl}${worker.profilePhoto}`
+    : "/img/placeholder.jpg";
+  const workerUserId = worker.userId;
   const photos = worker.photos || [];
   const servicesCount = worker.services ? worker.services.length : 0;
   const photosCount = photos.length;
+  const [sending, setSending] = useState(false);
+
+  const handleHire = async () => {
+    setSending(true);
+    try {
+      const payload = {
+        clientId,
+        workerId: workerUserId,
+        date: new Date().toISOString(),
+        notes: "",
+      };
+      await api.post("/Hire", payload);
+      onSuccess(displayName, worker.id);
+    } catch (err) {
+      console.error("Hire failed", err);
+      alert("Failed to send hire request");
+      setSending(false);
+    }
+  };
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-auto max-h-[90vh] p-8">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-bold text-blueGray-800">Worker Profile</h2>
-          <button onClick={onClose} className="text-blueGray-400 hover:text-blueGray-600 text-xl">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-blueGray-400 hover:text-blueGray-600 text-xl"
+          >
+            &times;
+          </button>
         </div>
 
         <div className="flex flex-col items-center mb-6">
-          <img src={photoUrl} alt="profile" className="w-32 h-32 rounded-full object-cover border-4 border-white shadow mb-2" />
-          <h3 className="text-xl font-semibold text-blueGray-700">{displayName}</h3>
+          <img
+            src={photoUrl}
+            alt="profile"
+            className="w-32 h-32 rounded-full object-cover border-4 border-white shadow mb-2"
+          />
+          <h3 className="text-xl font-semibold text-blueGray-700">
+            {displayName}
+          </h3>
           <div className="flex flex-col sm:flex-row gap-1 text-sm text-blueGray-500 mt-1">
-            <span><i className="fas fa-map-marker-alt mr-1" />{worker.city || "Unknown"}</span>
-            {worker.phone && <span className="sm:ml-4"><i className="fas fa-phone mr-1" />{worker.phone}</span>}
+            <span>
+              <i className="fas fa-map-marker-alt mr-1" />
+              {worker.city || "Unknown"}
+            </span>
+            {worker.phone && (
+              <span className="sm:ml-4">
+                <i className="fas fa-phone mr-1" />
+                {worker.phone}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm text-blueGray-600 mb-6">
-          {worker.yearsExperience && <p><strong>{worker.yearsExperience}</strong> years of experience</p>}
-          <p><strong>{servicesCount}</strong> services offered</p>
-          <p><strong>{photosCount}</strong> portfolio photos</p>
+          {worker.yearsExperience && (
+            <p>
+              <strong>{worker.yearsExperience}</strong> years of experience
+            </p>
+          )}
+          <p>
+            <strong>{servicesCount}</strong> services offered
+          </p>
+          <p>
+            <strong>{photosCount}</strong> portfolio photos
+          </p>
         </div>
 
         {worker.services?.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
             {worker.services.map((s) => (
-              <span key={s} className="bg-emerald-100 text-emerald-600 text-xs px-2 py-1 rounded-full">
+              <span
+                key={s}
+                className="bg-emerald-100 text-emerald-600 text-xs px-2 py-1 rounded-full"
+              >
                 {s}
               </span>
             ))}
@@ -116,11 +275,19 @@ function WorkerModal({ worker, onClose, onHire }) {
             {photos.map((p) => (
               <div key={p.id} className="space-y-1">
                 <img
-                  src={p.imageUrl.startsWith("http") ? p.imageUrl : `${backendUrl}${p.imageUrl}`}
+                  src={
+                    p.imageUrl.startsWith("http")
+                      ? p.imageUrl
+                      : `${backendUrl}${p.imageUrl}`
+                  }
                   alt="work"
                   className="w-full h-32 object-cover rounded shadow"
                 />
-                {p.description && <p className="text-[12px] text-blueGray-500 truncate">{p.description}</p>}
+                {p.description && (
+                  <p className="text-[12px] text-blueGray-500 truncate">
+                    {p.description}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -129,8 +296,21 @@ function WorkerModal({ worker, onClose, onHire }) {
         )}
 
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2 text-sm bg-blueGray-100 rounded hover:bg-blueGray-200">Close</button>
-          <button onClick={onHire} className="px-5 py-2 text-sm bg-lightBlue-500 text-white rounded hover:bg-lightBlue-600">Hire</button>
+          <button
+            onClick={onClose}
+            className="px-5 py-2 text-sm bg-blueGray-100 rounded hover:bg-blueGray-200"
+          >
+            Close
+          </button>
+          <button
+            onClick={handleHire}
+            disabled={sending}
+            className={`px-5 py-2 text-sm rounded ${
+              sending ? "bg-gray-400" : "bg-lightBlue-500 hover:bg-lightBlue-600"
+            } text-white`}
+          >
+            {sending ? "Sending..." : "Hire"}
+          </button>
         </div>
       </div>
     </div>,
@@ -138,12 +318,15 @@ function WorkerModal({ worker, onClose, onHire }) {
   );
 }
 
-function WorkerRow({ worker, onView }) {
-  const displayName = worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim() || "Unnamed Worker";
+function WorkerRow({ worker, onView, isPending }) {
+  const displayName =
+    worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim() || "Unnamed Worker";
   const photoUrl = worker.profilePhoto ? `${backendUrl}${worker.profilePhoto}` : "/img/placeholder.jpg";
   const thumbs = (worker.photos || []).slice(0, 3);
   const hiddenCount = (worker.photos || []).length - 3;
-  const serviceSentence = worker.services?.length ? `Provides ${worker.services.slice(0, 3).join(", ")}${worker.services.length > 3 ? " and more" : ""}` : null;
+  const serviceSentence = worker.services?.length
+    ? `Provides ${worker.services.slice(0, 3).join(", ")}${worker.services.length > 3 ? " and more" : ""}`
+    : null;
 
   return (
     <div className="bg-white border border-blueGray-100 rounded-lg shadow flex overflow-hidden w-full p-4">
@@ -176,7 +359,9 @@ function WorkerRow({ worker, onView }) {
             )}
           </div>
         )}
-        {serviceSentence && <p className="text-[11px] text-blueGray-500 mt-2 line-clamp-2">{serviceSentence}</p>}
+        {serviceSentence && (
+          <p className="text-[11px] text-blueGray-500 mt-2 line-clamp-2">{serviceSentence}</p>
+        )}
         {thumbs.length > 0 && (
           <div className="flex gap-2 mt-3">
             {thumbs.map((p) => (
@@ -196,9 +381,16 @@ function WorkerRow({ worker, onView }) {
         )}
       </div>
       <div className="flex items-center pl-4">
-        <button onClick={onView} className="bg-lightBlue-500 hover:bg-lightBlue-600 text-white text-xs font-semibold px-4 py-2 rounded">
-          View & Hire
-        </button>
+        {isPending ? (
+          <span className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+        ) : (
+          <button
+            onClick={onView}
+            className="bg-lightBlue-500 hover:bg-lightBlue-600 text-white text-xs font-semibold px-4 py-2 rounded"
+          >
+            View
+          </button>
+        )}
       </div>
     </div>
   );
