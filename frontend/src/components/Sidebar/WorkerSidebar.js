@@ -107,16 +107,16 @@ export default function Sidebar() {
                 <Link
                   className={
                     "text-xs uppercase py-3 font-bold block " +
-                    (window.location.href.includes("/worker/settings")
+                    (window.location.href.includes("/worker/MyClients")
                       ? "text-lightBlue-500 hover:text-lightBlue-600"
                       : "text-blueGray-700 hover:text-blueGray-500")
                   }
-                  to="/worker/settings"
+                  to="/worker/MyClients"
                 >
                   <i
                     className={
                       "fas fa-users mr-2 text-sm " +
-                      (window.location.href.includes("/worker/settings")
+                      (window.location.href.includes("/worker/MyClients")
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }

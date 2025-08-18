@@ -85,11 +85,24 @@ namespace SkillHire.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterDto request)
         {
+            
+            var roleNorm = (request.Role ?? "").Trim().ToLowerInvariant();
+            string? role = roleNorm switch
+            {
+                "client" => "Client",
+                "worker" => "Worker",
+                "admin" => "Admin",
+                _ => null
+            };
+            if (role is null)
+                return BadRequest("Role must be Client, Worker, or Admin.");
+
+           
             if (await _context.Users.AnyAsync(u => u.Email == request.Email || u.Username == request.Username))
                 return BadRequest("Username or Email already exists.");
 
+           
             var hashedPassword = HashPassword(request.Password);
-
             var user = new User
             {
                 Name = request.Name,
@@ -98,13 +111,14 @@ namespace SkillHire.Controllers
                 Username = request.Username,
                 Email = request.Email,
                 PasswordHash = hashedPassword,
-                Role = request.Role
+                Role = role
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            if (request.Role == "Worker")
+            
+            if (role == "Worker")
             {
                 var workerProfile = new WorkerProfile
                 {
@@ -119,6 +133,7 @@ namespace SkillHire.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            
             return Ok(new
             {
                 message = "User registered successfully.",
@@ -128,6 +143,7 @@ namespace SkillHire.Controllers
                 user.Role
             });
         }
+
 
         private string HashPassword(string password)
         {

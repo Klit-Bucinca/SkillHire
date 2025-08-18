@@ -6,7 +6,6 @@ import api from "utils/axiosInstance";
 
 const backendUrl = "https://localhost:7109";
 
-
 function Toast({ message, onClose }) {
   return (
     <div className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow-lg flex items-center space-x-4">
@@ -27,12 +26,9 @@ export default function HireWorker() {
   const [toastMsg, setToastMsg] = useState("");
   const [pendingHires, setPendingHires] = useState(new Set());
 
-
   const [city, setCity] = useState("All");
   const [service, setService] = useState("All");
   const [minExp, setMinExp] = useState("");
-
-  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     (async () => {
@@ -64,7 +60,7 @@ export default function HireWorker() {
     const term = search.toLowerCase();
 
     const next = workers.filter((w) => {
-      const name = (w.fullName || "").toLowerCase();
+      const name = (w.fullName || `${w.name || ""} ${w.surname || ""}`.trim()).toLowerCase();
       const wCity = (w.city || "").toLowerCase();
       const wServices = (w.services || []);
       const servicesText = wServices.join(" ").toLowerCase();
@@ -85,9 +81,9 @@ export default function HireWorker() {
     setFiltered(next);
   }, [search, workers, city, service, minExp]);
 
-  const handleHireSuccess = (name, workerId) => {
+  const handleHireSuccess = (name, workerProfileId) => {
     setToastMsg(`Your hire request for ${name} has been sent!`);
-    setPendingHires((prev) => new Set(prev).add(workerId));
+    setPendingHires((prev) => new Set(prev).add(workerProfileId));
     setActive(null);
   };
 
@@ -166,7 +162,6 @@ export default function HireWorker() {
       {active && (
         <WorkerModal
           worker={active}
-          clientId={user.id}
           onClose={() => setActive(null)}
           onSuccess={handleHireSuccess}
         />
@@ -177,39 +172,61 @@ export default function HireWorker() {
   );
 }
 
-function WorkerModal({ worker, clientId, onClose, onSuccess }) {
+function WorkerModal({ worker, onClose, onSuccess }) {
   const displayName =
     worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim();
   const photoUrl = worker.profilePhoto
     ? `${backendUrl}${worker.profilePhoto}`
     : "/img/placeholder.jpg";
-  const workerUserId = worker.userId;
+  const workerUserId = worker.userId; // must be Users.Id
   const photos = worker.photos || [];
   const servicesCount = worker.services ? worker.services.length : 0;
   const photosCount = photos.length;
   const [sending, setSending] = useState(false);
 
-  const handleHire = async () => {
+  // notes step
+  const [showNotes, setShowNotes] = useState(false);
+  const [notes, setNotes] = useState("");
+
+  const submitHire = async () => {
     setSending(true);
     try {
+      console.log("Submitting hire for worker userId:", workerUserId, { worker });
+
+      // Optional preflight to diagnose "Worker not found." errors:
+      try {
+        const { data: workerUser } = await api.get(`/Users/${workerUserId}`);
+        if (workerUser?.role !== "Worker") {
+          alert(`Selected user (id=${workerUserId}) is role "${workerUser?.role}", not "Worker".`);
+          setSending(false);
+          return;
+        }
+      } catch (e) {
+        console.error("Preflight /Users/{id} failed", e);
+        // continue anyway; backend will validate as well
+      }
+
       const payload = {
-        clientId,
-        workerId: workerUserId,
+        workerId: workerUserId,        // backend will derive clientId from JWT
         date: new Date().toISOString(),
-        notes: "",
+        notes,
       };
-      await api.post("/Hire", payload);
-      onSuccess(displayName, worker.id);
+
+      const res = await api.post("/Hire", payload);
+      console.log("Hire created:", res.data);
+      onSuccess(displayName, worker.id); // mark this profile as pending in UI
     } catch (err) {
-      console.error("Hire failed", err);
-      alert("Failed to send hire request");
+      const status = err.response?.status;
+      const data = err.response?.data;
+      console.error("Hire failed", { status, data, err });
+      alert(typeof data === "string" ? data : "Failed to send hire request");
       setSending(false);
     }
   };
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-auto max-h-[90vh] p-8">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-auto max-h-[90vh] p-8 relative">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-bold text-blueGray-800">Worker Profile</h2>
           <button
@@ -295,6 +312,7 @@ function WorkerModal({ worker, clientId, onClose, onSuccess }) {
           <p className="text-blueGray-400 mb-6">No portfolio photos yet.</p>
         )}
 
+        {/* Footer actions */}
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -303,7 +321,7 @@ function WorkerModal({ worker, clientId, onClose, onSuccess }) {
             Close
           </button>
           <button
-            onClick={handleHire}
+            onClick={() => setShowNotes(true)}
             disabled={sending}
             className={`px-5 py-2 text-sm rounded ${
               sending ? "bg-gray-400" : "bg-lightBlue-500 hover:bg-lightBlue-600"
@@ -312,6 +330,41 @@ function WorkerModal({ worker, clientId, onClose, onSuccess }) {
             {sending ? "Sending..." : "Hire"}
           </button>
         </div>
+
+        {/* Notes dialog */}
+        {showNotes && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-5">
+              <h4 className="text-lg font-semibold text-blueGray-700 mb-3">
+                Add notes for the worker (optional)
+              </h4>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Describe what you need, preferred time, address, etc."
+                rows={5}
+                className="w-full p-3 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-lightBlue-500"
+              />
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={() => setShowNotes(false)}
+                  className="px-4 py-2 text-sm rounded bg-blueGray-100 hover:bg-blueGray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitHire}
+                  disabled={sending}
+                  className={`px-4 py-2 text-sm rounded ${
+                    sending ? "bg-gray-400" : "bg-emerald-500 hover:bg-emerald-600"
+                  } text-white`}
+                >
+                  {sending ? "Sending..." : "Send request"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body
@@ -320,12 +373,18 @@ function WorkerModal({ worker, clientId, onClose, onSuccess }) {
 
 function WorkerRow({ worker, onView, isPending }) {
   const displayName =
-    worker.fullName || `${worker.name || ""} ${worker.surname || ""}`.trim() || "Unnamed Worker";
-  const photoUrl = worker.profilePhoto ? `${backendUrl}${worker.profilePhoto}` : "/img/placeholder.jpg";
+    worker.fullName ||
+    `${worker.name || ""} ${worker.surname || ""}`.trim() ||
+    "Unnamed Worker";
+  const photoUrl = worker.profilePhoto
+    ? `${backendUrl}${worker.profilePhoto}`
+    : "/img/placeholder.jpg";
   const thumbs = (worker.photos || []).slice(0, 3);
   const hiddenCount = (worker.photos || []).length - 3;
   const serviceSentence = worker.services?.length
-    ? `Provides ${worker.services.slice(0, 3).join(", ")}${worker.services.length > 3 ? " and more" : ""}`
+    ? `Provides ${worker.services
+        .slice(0, 3)
+        .join(", ")}${worker.services.length > 3 ? " and more" : ""}`
     : null;
 
   return (
@@ -360,7 +419,9 @@ function WorkerRow({ worker, onView, isPending }) {
           </div>
         )}
         {serviceSentence && (
-          <p className="text-[11px] text-blueGray-500 mt-2 line-clamp-2">{serviceSentence}</p>
+          <p className="text-[11px] text-blueGray-500 mt-2 line-clamp-2">
+            {serviceSentence}
+          </p>
         )}
         {thumbs.length > 0 && (
           <div className="flex gap-2 mt-3">

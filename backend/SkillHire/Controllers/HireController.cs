@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SkillHire.Data;
 using SkillHire.Dtos;
 using SkillHire.Models;
+using System.Security.Claims;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,15 +23,19 @@ namespace SkillHire.Controllers
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> CreateHire([FromBody] HireCreateDto dto)
         {
-            if (!await _ctx.Users.AnyAsync(u => u.Id == dto.ClientId && u.Role == "Client"))
+        
+            var clientId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (!await _ctx.Users.AnyAsync(u => u.Id == clientId && u.Role == "Client"))
                 return BadRequest("Client not found.");
 
+ 
             if (!await _ctx.Users.AnyAsync(u => u.Id == dto.WorkerId && u.Role == "Worker"))
                 return BadRequest("Worker not found.");
 
             var hire = new Hire
             {
-                ClientId = dto.ClientId,
+                ClientId = clientId,
                 WorkerId = dto.WorkerId,
                 Date = dto.Date,
                 Notes = dto.Notes
@@ -132,7 +137,7 @@ namespace SkillHire.Controllers
             var hire = await _ctx.Hires.FindAsync(id);
             if (hire == null) return NotFound();
 
-            var userId = int.Parse(User.FindFirst("id")!.Value); 
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
             if (hire.WorkerId != userId && !User.IsInRole("Admin"))
                 return Forbid();
 
