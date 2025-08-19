@@ -16,11 +16,6 @@ import Auth from "layouts/Auth.js";
 import Client from "layouts/Client.js";
 import Worker from "layouts/Worker.js";
 
-// views without layouts
-import Landing from "views/Landing.js";
-import Profile from "views/Profile.js";
-import Index from "views/Index.js";
-
 const root = createRoot(document.getElementById("root"));
 root.render(
   <BrowserRouter>
@@ -29,10 +24,6 @@ root.render(
       <Route path="/auth" component={Auth} />
       <Route path="/client" component={Client} />
       <Route path="/worker" component={Worker} />
-
-      <Route path="/landing" exact component={Landing} />
-      <Route path="/profile" exact component={Profile} />
-      <Route path="/" exact component={Index} />
 
       <Redirect from="*" to="/" />
     </Switch>

@@ -25,7 +25,7 @@ export default function Worker() {
             <Route path="/worker/MyClients" exact component={MyClients} />
             <Route path="/worker/WorkerProfile" exact component={WorkerProfile} />
             <Route path="/worker/MyPhotos" exact component={MyPhotos} />
-            <Redirect from="/worker" to="/worker/dashboard" />
+            <Redirect from="/MyPhotos" to="/worker/MyPhotos" />
           </Switch>
           <FooterAdmin />
         </div>

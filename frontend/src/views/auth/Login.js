@@ -24,8 +24,8 @@ export default function Login() {
       alert("Login successful!");
 
       if (role === "Admin") history.push("/admin/dashboard");
-      else if (role === "Client") history.push("/client/dashboard");
-      else if (role === "Worker") history.push("/worker/dashboard");
+      else if (role === "Client") history.push("/client/HireWorker");
+      else if (role === "Worker") history.push("/worker/MyPhotos");
       else history.push("/auth/login");
     } catch (err) {
       alert("Login failed: " + (err.response?.data || err.message));
