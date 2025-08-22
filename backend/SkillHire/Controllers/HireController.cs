@@ -152,5 +152,65 @@ namespace SkillHire.Controllers
 
             return Ok(ToDto(hire));
         }
+
+        [HttpGet("client/stats")]
+        [Authorize(Roles = "Client,Admin")]
+        public async Task<IActionResult> GetClientStats([FromQuery] int? clientId)
+        {
+            var authId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+            var targetClientId = (User.IsInRole("Admin") && clientId.HasValue) ? clientId.Value : authId;
+
+            var isClient = await _ctx.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == targetClientId && u.Role == "Client");
+            if (!isClient) return BadRequest("Client not found.");
+
+            var stats = await _ctx.Hires
+                .AsNoTracking()
+                .Where(h => h.ClientId == targetClientId)
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    pending = g.Count(h => h.Status == HireStatus.Pending),
+                    accepted = g.Count(h => h.Status == HireStatus.Accepted),
+                    rejected = g.Count(h => h.Status == HireStatus.Rejected),
+                    total = g.Count()
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(stats ?? new { pending = 0, accepted = 0, rejected = 0, total = 0 });
+        }
+
+        [HttpGet("admin/stats")]
+        [Authorize(Roles = "Worker")]
+        public async Task<IActionResult> GetAdminStats()
+        {
+            var now = DateTime.UtcNow;
+            var startCurrent = now.AddDays(-7);
+            var startPrev = now.AddDays(-14);
+            var endPrev = startCurrent;
+
+            var pending = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Pending);
+            var accepted = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Accepted);
+            var rejected = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Rejected);
+            var total = await _ctx.Hires.CountAsync();
+
+            var totalCurrent7d = await _ctx.Hires.CountAsync(h => h.Date >= startCurrent);
+            var totalPrev7d = await _ctx.Hires.CountAsync(h => h.Date >= startPrev && h.Date < endPrev);
+
+            double Percent(int curr, int prev) =>
+                prev == 0 ? (curr > 0 ? 100 : 0) : ((double)(curr - prev) / prev) * 100;
+
+            var decided = accepted + rejected;
+            var acceptanceRate = decided == 0 ? 0 : (accepted * 100.0) / decided;
+
+            return Ok(new
+            {
+                pending,
+                accepted,
+                acceptanceRate,
+                totalDelta7d = Percent(totalCurrent7d, totalPrev7d)
+            });
+        }
     }
 }

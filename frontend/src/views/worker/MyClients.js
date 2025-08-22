@@ -21,24 +21,22 @@ const badgeClass = (status) =>
     : "bg-yellow-100 text-yellow-800";
 
 export default function WorkerHireRequests() {
-  const user = JSON.parse(localStorage.getItem("user")); // worker userId
+  const user = JSON.parse(localStorage.getItem("user"));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Pending"); // keep existing control
-  const [saving, setSaving] = useState(null); // hireId while saving
-  const [flash, setFlash] = useState(""); // <<< short success message
+  const [statusFilter, setStatusFilter] = useState("Pending"); 
+  const [saving, setSaving] = useState(null);
+  const [flash, setFlash] = useState(""); 
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         setError("");
-        // hires addressed to this worker (by worker userId)
         const { data: hires } = await api.get(`/Hire/worker/${user.id}`);
 
-        // best-effort: fetch client names
         const withClient = await Promise.all(
           hires.map(async (h) => {
             try {
@@ -86,13 +84,11 @@ export default function WorkerHireRequests() {
       });
   }, [rows, query, statusFilter]);
 
-  // Pending cards section (respects whatever is in "list")
   const pendingList = useMemo(
     () => list.filter((r) => r.statusText === "Pending"),
     [list]
   );
 
-  // Accepted table section (ALWAYS shows accepted regardless of statusFilter)
   const acceptedList = useMemo(() => {
     const q = query.toLowerCase();
     return rows
@@ -106,11 +102,10 @@ export default function WorkerHireRequests() {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [rows, query]);
 
-  // >>> Buttons call this
   const updateStatus = async (hireId, statusNumber) => {
     try {
       setSaving(hireId);
-      await api.put(`/Hire/${hireId}`, { status: statusNumber }); // backend expects numbers
+      await api.put(`/Hire/${hireId}`, { status: statusNumber });
 
       setRows((prev) =>
         prev.map((r) =>

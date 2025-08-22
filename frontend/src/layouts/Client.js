@@ -3,7 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 
 import Sidebar from "components/Sidebar/ClientSidebar.js";
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
-import HeaderStats from "components/Headers/HeaderStats.js";
+import HeaderStats from "components/Headers/ClientHeaderStats.js";
 import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 import HireWorker from "views/client/HireWorker.js";

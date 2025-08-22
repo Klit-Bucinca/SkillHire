@@ -85,6 +85,8 @@ export default function HireWorker() {
     setToastMsg(`Your hire request for ${name} has been sent!`);
     setPendingHires((prev) => new Set(prev).add(workerProfileId));
     setActive(null);
+
+     window.dispatchEvent(new Event("hires:changed"));
   };
 
   const clearFilters = () => {
@@ -178,13 +180,13 @@ function WorkerModal({ worker, onClose, onSuccess }) {
   const photoUrl = worker.profilePhoto
     ? `${backendUrl}${worker.profilePhoto}`
     : "/img/placeholder.jpg";
-  const workerUserId = worker.userId; // must be Users.Id
+  const workerUserId = worker.userId; 
   const photos = worker.photos || [];
   const servicesCount = worker.services ? worker.services.length : 0;
   const photosCount = photos.length;
   const [sending, setSending] = useState(false);
 
-  // notes step
+  
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -193,7 +195,7 @@ function WorkerModal({ worker, onClose, onSuccess }) {
     try {
       console.log("Submitting hire for worker userId:", workerUserId, { worker });
 
-      // Optional preflight to diagnose "Worker not found." errors:
+      
       try {
         const { data: workerUser } = await api.get(`/Users/${workerUserId}`);
         if (workerUser?.role !== "Worker") {
@@ -203,18 +205,19 @@ function WorkerModal({ worker, onClose, onSuccess }) {
         }
       } catch (e) {
         console.error("Preflight /Users/{id} failed", e);
-        // continue anyway; backend will validate as well
+        
       }
 
       const payload = {
-        workerId: workerUserId,        // backend will derive clientId from JWT
+        workerId: workerUserId,        
         date: new Date().toISOString(),
         notes,
       };
 
       const res = await api.post("/Hire", payload);
+      window.dispatchEvent(new Event("hires:changed"));
       console.log("Hire created:", res.data);
-      onSuccess(displayName, worker.id); // mark this profile as pending in UI
+      onSuccess(displayName, worker.id); 
     } catch (err) {
       const status = err.response?.status;
       const data = err.response?.data;
@@ -312,7 +315,7 @@ function WorkerModal({ worker, onClose, onSuccess }) {
           <p className="text-blueGray-400 mb-6">No portfolio photos yet.</p>
         )}
 
-        {/* Footer actions */}
+        {}
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -331,7 +334,7 @@ function WorkerModal({ worker, onClose, onSuccess }) {
           </button>
         </div>
 
-        {/* Notes dialog */}
+        {}
         {showNotes && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-5">
