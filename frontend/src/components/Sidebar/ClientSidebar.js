@@ -79,7 +79,7 @@ export default function Sidebar() {
             <hr className="my-4 md:min-w-full" />
             {/* Heading */}
             <h6 className="md:min-w-full text-blueGray-500 text-xs uppercase font-bold block pt-1 pb-4 no-underline">
-              Admin Layout Pages
+              Client Pages
             </h6>
             {/* Navigation */}
 
@@ -96,13 +96,13 @@ export default function Sidebar() {
                 >
                   <i
                     className={
-                      "fas fa-tv mr-2 text-sm " +
+                      "fas fa-user-check mr-2 text-sm " +
                       (window.location.href.indexOf("/client/HireWorker") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")
                     }
                   ></i>{" "}
-                  HireWorker
+                  Hire Worker
                 </Link>
               </li>
               <li className="items-center">
@@ -117,7 +117,7 @@ export default function Sidebar() {
                 >
                   <i
                     className={
-                      "fas fa-tv mr-2 text-sm " +
+                      "fas fa-clipboard-list mr-2 text-sm " +
                       (window.location.href.indexOf("/client/MyHires") !== -1
                         ? "opacity-75"
                         : "text-blueGray-300")

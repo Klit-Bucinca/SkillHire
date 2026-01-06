@@ -17,7 +17,7 @@ export default function Worker() {
     <>
       <Sidebar />
       <div className="relative md:ml-64 bg-blueGray-100">
-        <AdminNavbar />
+        <AdminNavbar showSearch={false} showUser={false} />
         <HeaderStats />
         <div className="px-4 md:px-10 mx-auto w-full -m-24">
           <Switch>

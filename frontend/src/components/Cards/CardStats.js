@@ -12,7 +12,10 @@ export default function CardStats({
   statIconColor = "bg-red-500",
 }) {
   return (
-    <div className="relative flex flex-col min-w-0 break-words bg-white rounded mb-6 xl:mb-0 shadow-lg">
+    <div
+      className="relative flex flex-col min-w-0 break-words bg-white rounded mb-6 xl:mb-0 shadow-lg"
+      style={{ minHeight: "160px" }}
+    >
       <div className="flex-auto p-4">
         <div className="flex flex-wrap">
           <div className="relative w-full pr-4 max-w-full flex-grow flex-1">
@@ -44,7 +47,7 @@ export default function CardStats({
             ></i>{" "}
             {statPercent}%
           </span>
-          <span className="whitespace-nowrap">{statDescripiron}</span>
+          <span>{statDescripiron}</span>
         </p>
       </div>
     </div>

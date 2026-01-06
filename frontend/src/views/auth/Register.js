@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "utils/axiosInstance";
 import SkillHireLogo from "assets/img/skillhire-logo2.png"; 
 
 export default function Register() {
@@ -19,9 +19,9 @@ export default function Register() {
 
   const handleRegister = async () => {
   try {
-    await axios.post("https://localhost:7109/api/Auth/register", formData);
+    await api.post("/Auth/register", formData);
 
-    const loginRes = await axios.post("https://localhost:7109/api/Auth/login", {
+    const loginRes = await api.post("/Auth/login", {
       username: formData.username,
       password: formData.password,
     });
@@ -33,11 +33,11 @@ export default function Register() {
 
     const role = loginRes.data.role;
     if (role === "Admin") {
-      window.location.href = "/admin/dashboard";
+      window.location.href = "/admin";
     } else if (role === "Client") {
-      window.location.href = "/client/dashboard";
+      window.location.href = "/client/HireWorker";
     } else if (role === "Worker") {
-      window.location.href = "/worker/dashboard";
+      window.location.href = "/worker/MyPhotos";
     } else {
       window.location.href = "/auth/login";
     }

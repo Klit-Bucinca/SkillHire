@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
-import axios from "axios";
+import api from "utils/axiosInstance";
 
 
 import SkillHireLogo from "assets/img/skillhire-logo2.png"; 
@@ -15,7 +15,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("https://localhost:7109/api/Auth/login", formData);
+      const res = await api.post("/Auth/login", formData);
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data));
@@ -23,7 +23,7 @@ export default function Login() {
       const role = res.data.role;
       alert("Login successful!");
 
-      if (role === "Admin") history.push("/admin/dashboard");
+      if (role === "Admin") history.push("/admin");
       else if (role === "Client") history.push("/client/HireWorker");
       else if (role === "Worker") history.push("/worker/MyPhotos");
       else history.push("/auth/login");

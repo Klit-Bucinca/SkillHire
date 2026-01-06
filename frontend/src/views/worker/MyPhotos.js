@@ -12,7 +12,7 @@ const toMsg = (err) =>
   "Unexpected error";
 
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "https://localhost:7109";
+const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "http://localhost:5020";
 
 
 export default function MyPhotos() {

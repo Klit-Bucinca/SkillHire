@@ -131,7 +131,7 @@ namespace SkillHire.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Worker")]
+        [Authorize(Roles = "Worker,Admin")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] HireStatusUpdateDto dto)
         {
             var hire = await _ctx.Hires.FindAsync(id);
@@ -182,7 +182,7 @@ namespace SkillHire.Controllers
         }
 
         [HttpGet("admin/stats")]
-        [Authorize(Roles = "Worker")]
+        [Authorize(Roles = "Admin,Worker")]
         public async Task<IActionResult> GetAdminStats()
         {
             var now = DateTime.UtcNow;
@@ -193,7 +193,7 @@ namespace SkillHire.Controllers
             var pending = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Pending);
             var accepted = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Accepted);
             var rejected = await _ctx.Hires.CountAsync(h => h.Status == HireStatus.Rejected);
-            var total = await _ctx.Hires.CountAsync();
+            var totalHires = pending + accepted + rejected;
 
             var totalCurrent7d = await _ctx.Hires.CountAsync(h => h.Date >= startCurrent);
             var totalPrev7d = await _ctx.Hires.CountAsync(h => h.Date >= startPrev && h.Date < endPrev);
@@ -204,12 +204,23 @@ namespace SkillHire.Controllers
             var decided = accepted + rejected;
             var acceptanceRate = decided == 0 ? 0 : (accepted * 100.0) / decided;
 
+            var usersTotal = await _ctx.Users.CountAsync();
+            var activeWorkers30d = await _ctx.Hires
+                .Where(h => h.Date >= now.AddDays(-30))
+                .Select(h => h.WorkerId)
+                .Distinct()
+                .CountAsync();
+
             return Ok(new
             {
+                usersTotal,
+                totalHires,
                 pending,
                 accepted,
+                rejected,
                 acceptanceRate,
-                totalDelta7d = Percent(totalCurrent7d, totalPrev7d)
+                totalDelta7d = Percent(totalCurrent7d, totalPrev7d),
+                activeWorkers30d
             });
         }
     }

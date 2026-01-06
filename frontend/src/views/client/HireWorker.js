@@ -4,13 +4,13 @@ import ReactDOM from "react-dom";
 import { useHistory, Link } from "react-router-dom";
 import api from "utils/axiosInstance";
 
-const backendUrl = "https://localhost:7109";
+const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "http://localhost:5020";
 
 function Toast({ message, onClose }) {
   return (
     <div className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow-lg flex items-center space-x-4">
       <span>{message}</span>
-      <Link to="/client/hires" className="underline font-semibold">View My Hires</Link>
+      <Link to="/client/MyHires" className="underline font-semibold">View My Hires</Link>
       <button onClick={onClose} className="ml-4 font-bold">×</button>
     </div>
   );
@@ -26,8 +26,10 @@ export default function HireWorker() {
   const [toastMsg, setToastMsg] = useState("");
   const [pendingHires, setPendingHires] = useState(new Set());
 
-  const [city, setCity] = useState("All");
-  const [service, setService] = useState("All");
+  const ALL_CITIES = "All Cities";
+  const ALL_SERVICES = "All Work Types";
+  const [city, setCity] = useState(ALL_CITIES);
+  const [service, setService] = useState(ALL_SERVICES);
   const [minExp, setMinExp] = useState("");
 
   useEffect(() => {
@@ -47,13 +49,13 @@ export default function HireWorker() {
   const cityOptions = useMemo(() => {
     const set = new Set();
     workers.forEach((w) => w.city && set.add(w.city));
-    return ["City", ...Array.from(set).sort()];
+    return [ALL_CITIES, ...Array.from(set).sort()];
   }, [workers]);
 
   const serviceOptions = useMemo(() => {
     const set = new Set();
     workers.forEach((w) => (w.services || []).forEach((s) => set.add(s)));
-    return ["Work", ...Array.from(set).sort()];
+    return [ALL_SERVICES, ...Array.from(set).sort()];
   }, [workers]);
 
   useEffect(() => {
@@ -68,9 +70,9 @@ export default function HireWorker() {
       const matchesText =
         name.includes(term) || wCity.includes(term) || servicesText.includes(term);
 
-      const matchesCity = city === "All" || w.city === city;
+      const matchesCity = city === ALL_CITIES || w.city === city;
 
-      const matchesService = service === "All" || wServices.includes(service);
+      const matchesService = service === ALL_SERVICES || wServices.includes(service);
 
       const expOK =
         minExp === "" || Number(w.yearsExperience || 0) >= Number(minExp);
@@ -90,8 +92,8 @@ export default function HireWorker() {
   };
 
   const clearFilters = () => {
-    setCity("All");
-    setService("All");
+    setCity(ALL_CITIES);
+    setService(ALL_SERVICES);
     setMinExp("");
     setSearch("");
   };
@@ -189,6 +191,16 @@ function WorkerModal({ worker, onClose, onSuccess }) {
   
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState("");
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const openLightbox = (index) => setLightboxIndex(index);
+  const closeLightbox = () => setLightboxIndex(null);
+  const showPrev = () => {
+    setLightboxIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
+  };
+  const showNext = () => {
+    setLightboxIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
+  };
 
   const submitHire = async () => {
     setSending(true);
@@ -228,8 +240,15 @@ function WorkerModal({ worker, onClose, onSuccess }) {
   };
 
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-auto max-h-[90vh] p-8 relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.75)" }}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-0 relative"
+        style={{ height: "90vh" }}
+      >
+        <div className="p-8 overflow-y-auto h-full">
         <div className="flex justify-between items-start mb-6">
           <h2 className="text-2xl font-bold text-blueGray-800">Worker Profile</h2>
           <button
@@ -292,17 +311,23 @@ function WorkerModal({ worker, onClose, onSuccess }) {
 
         {photosCount > 0 ? (
           <div className="grid grid-cols-2 gap-4 mb-8">
-            {photos.map((p) => (
+            {photos.map((p, idx) => (
               <div key={p.id} className="space-y-1">
-                <img
-                  src={
-                    p.imageUrl.startsWith("http")
-                      ? p.imageUrl
-                      : `${backendUrl}${p.imageUrl}`
-                  }
-                  alt="work"
-                  className="w-full h-32 object-cover rounded shadow"
-                />
+                <button
+                  type="button"
+                  onClick={() => openLightbox(idx)}
+                  className="block w-full"
+                >
+                  <img
+                    src={
+                      p.imageUrl.startsWith("http")
+                        ? p.imageUrl
+                        : `${backendUrl}${p.imageUrl}`
+                    }
+                    alt="work"
+                    className="w-full h-32 object-cover rounded shadow"
+                  />
+                </button>
                 {p.description && (
                   <p className="text-[12px] text-blueGray-500 truncate">
                     {p.description}
@@ -368,6 +393,80 @@ function WorkerModal({ worker, onClose, onSuccess }) {
             </div>
           </div>
         )}
+        {lightboxIndex !== null && photos[lightboxIndex] && (
+          <div
+            className="fixed inset-0 flex items-center justify-center"
+            style={{ zIndex: 60, backgroundColor: "rgba(0, 0, 0, 0.85)" }}
+            onClick={closeLightbox}
+          >
+            <div
+              className="relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeLightbox();
+                }}
+                className="absolute text-white"
+                style={{ top: "-48px", right: "0", fontSize: "40px" }}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <img
+                src={
+                  photos[lightboxIndex].imageUrl.startsWith("http")
+                    ? photos[lightboxIndex].imageUrl
+                    : `${backendUrl}${photos[lightboxIndex].imageUrl}`
+                }
+                alt="work"
+                className="block"
+                style={{ maxHeight: "80vh", maxWidth: "90vw" }}
+              />
+              {photos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showPrev();
+                    }}
+                    className="absolute text-white"
+                    style={{
+                      left: "0",
+                      top: "50%",
+                      transform: "translate(-150%, -50%)",
+                      fontSize: "64px",
+                    }}
+                    aria-label="Previous photo"
+                  >
+                    &#8249;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showNext();
+                    }}
+                    className="absolute text-white"
+                    style={{
+                      right: "0",
+                      top: "50%",
+                      transform: "translate(150%, -50%)",
+                      fontSize: "64px",
+                    }}
+                    aria-label="Next photo"
+                  >
+                    &#8250;
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        </div>
       </div>
     </div>,
     document.body

@@ -25,7 +25,7 @@ root.render(
       <Route path="/client" component={Client} />
       <Route path="/worker" component={Worker} />
 
-      <Redirect from="*" to="/" />
+      <Redirect from="*" to="/auth/login" />
     </Switch>
   </BrowserRouter>
 );

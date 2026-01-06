@@ -40,7 +40,10 @@ export default function HeaderStats() {
   return (
     <>
       {/* Header */}
-      <div className="relative bg-lightBlue-600 md:pt-32 pb-32 pt-12">
+      <div
+        className="relative bg-lightBlue-600"
+        style={{ paddingTop: "5rem", paddingBottom: "4rem" }}
+      >
         <div className="px-4 md:px-10 mx-auto w-full">
           {err && (
             <p className="mb-4 text-white/90 text-sm bg-white/10 rounded px-3 py-2 inline-block">
@@ -57,7 +60,7 @@ export default function HeaderStats() {
                 statArrow="up"             
                 statPercent=""            
                 statPercentColor="text-emerald-500"
-                statDescripiron="Your hire requests awaiting response"
+                statDescripiron="Hire Requests awaiting response"
                 statIconName="fas fa-hourglass-half"
                 statIconColor="bg-yellow-500"
               />
