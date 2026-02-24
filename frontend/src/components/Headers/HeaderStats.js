@@ -42,7 +42,7 @@ export default function HeaderStatsAdmin() {
       <div className="px-4 md:px-10 mx-auto w-full">
         <div className="flex flex-wrap">
           {/* Users Registered */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="USERS REGISTERED"
               statTitle={n(stats?.usersTotal)}
@@ -56,7 +56,7 @@ export default function HeaderStatsAdmin() {
           </div>
 
           {/* Requests (Total hires) */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="REQUESTS (TOTAL)"
               statTitle={n(stats?.totalHires)}
@@ -70,7 +70,7 @@ export default function HeaderStatsAdmin() {
           </div>
 
           {/* Pending */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="PENDING"
               statTitle={n(stats?.pending)}
@@ -84,7 +84,7 @@ export default function HeaderStatsAdmin() {
           </div>
 
           {/* Acceptance Rate */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="ACCEPTANCE RATE"
               statTitle={loading ? "…" : `${(stats?.acceptanceRate ?? 0).toFixed(0)}%`}
@@ -98,7 +98,7 @@ export default function HeaderStatsAdmin() {
           </div>
 
           {/* (Optional) 7d Δ of total requests */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4 mt-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4 mt-4">
             <CardStats
               statSubtitle="TOTAL REQUESTS (7D Δ)"
               statTitle={loading ? "…" : ""}
@@ -112,7 +112,7 @@ export default function HeaderStatsAdmin() {
           </div>
 
           {/* (Optional) Active Workers (30d) */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4 mt-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4 mt-4">
             <CardStats
               statSubtitle="ACTIVE WORKERS (30D)"
               statTitle={n(stats?.activeWorkers30d)}

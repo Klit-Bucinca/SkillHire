@@ -57,7 +57,7 @@ export default function CardStats({
 CardStats.propTypes = {
   statSubtitle: PropTypes.string,
   statTitle: PropTypes.string,
-  statArrow: PropTypes.oneOf(["up", "down"]),
+  statArrow: PropTypes.oneOf(["up", "down", ""]),
   statPercent: PropTypes.string,
   statPercentColor: PropTypes.string, // tailwind text color class
   statDescripiron: PropTypes.string,

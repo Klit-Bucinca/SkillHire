@@ -45,7 +45,7 @@ export default function HeaderStatsManager() {
       <div className="px-4 md:px-10 mx-auto w-full">
         <div className="flex flex-wrap">
           {/* Pending */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="PENDING"
               statTitle={n(stats?.pending)}
@@ -59,7 +59,7 @@ export default function HeaderStatsManager() {
           </div>
 
           {/* Accepted */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="ACCEPTED"
               statTitle={n(stats?.accepted)}
@@ -73,7 +73,7 @@ export default function HeaderStatsManager() {
           </div>
 
           {/* Acceptance Rate */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="ACCEPTANCE RATE"
               statTitle={
@@ -91,7 +91,7 @@ export default function HeaderStatsManager() {
           </div>
 
           {/* Total 7d Delta */}
-          <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+          <div className="w-full md:w-6/12 lg:w-3/12 px-4">
             <CardStats
               statSubtitle="TOTAL (7D Delta)"
               statTitle={loading ? "..." : ""}

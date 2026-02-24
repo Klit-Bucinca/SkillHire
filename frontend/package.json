@@ -10,9 +10,6 @@
     "@tailwindcss/forms": "0.2.1",
     "autoprefixer": "10.2.5",
     "axios": "^1.11.0",
-    "chart.js": "2.9.4",
-    "gulp": "4.0.2",
-    "gulp-append-prepend": "1.0.8",
     "postcss": "8.4.39",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -23,7 +20,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && gulp licenses",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm run build:tailwind && npm start",

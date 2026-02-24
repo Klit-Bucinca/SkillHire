@@ -53,7 +53,7 @@ export default function HeaderStats() {
           {/* Card stats */}
           <div className="flex flex-wrap">
             {/* Pending */}
-            <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+            <div className="w-full md:w-6/12 lg:w-3/12 px-4">
               <CardStats
                 statSubtitle="PENDING"
                 statTitle={fmt(stats.pending)}
@@ -67,7 +67,7 @@ export default function HeaderStats() {
             </div>
 
             {/* Accepted */}
-            <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+            <div className="w-full md:w-6/12 lg:w-3/12 px-4">
               <CardStats
                 statSubtitle="ACCEPTED"
                 statTitle={fmt(stats.accepted)}
@@ -81,7 +81,7 @@ export default function HeaderStats() {
             </div>
 
             {/* Rejected */}
-            <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+            <div className="w-full md:w-6/12 lg:w-3/12 px-4">
               <CardStats
                 statSubtitle="REJECTED"
                 statTitle={fmt(stats.rejected)}
@@ -95,7 +95,7 @@ export default function HeaderStats() {
             </div>
 
             {/* Total */}
-            <div className="w-full lg:w-6/12 xl:w-3/12 px-4">
+            <div className="w-full md:w-6/12 lg:w-3/12 px-4">
               <CardStats
                 statSubtitle="TOTAL"
                 statTitle={fmt(stats.total)}

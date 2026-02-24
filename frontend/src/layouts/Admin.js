@@ -13,6 +13,7 @@ import FooterAdmin from "components/Footers/FooterAdmin.js";
 
 import Categories from "views/admin/Categories.js";
 import Services from "views/admin/Services.js";
+import Users from "views/admin/Users.js";
 
 export default function Admin() {
   return (
@@ -26,6 +27,7 @@ export default function Admin() {
           <Switch>
             <Route path="/admin/categories" exact component={Categories} />
             <Route path="/admin/services" exact component={Services} />
+            <Route path="/admin/users" exact component={Users} />
             <Redirect from="/admin" to="/admin/services" />
           </Switch>
           <FooterAdmin />
