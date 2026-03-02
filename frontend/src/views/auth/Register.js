@@ -12,13 +12,16 @@ export default function Register() {
     password: "",
     role: "Client",
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
+    if (errorMessage) setErrorMessage("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleRegister = async () => {
   try {
+    setErrorMessage("");
     await api.post("/Auth/register", formData);
 
     const loginRes = await api.post("/Auth/login", {
@@ -28,8 +31,6 @@ export default function Register() {
 
     localStorage.setItem("token", loginRes.data.token);
     localStorage.setItem("user", JSON.stringify(loginRes.data));
-
-    alert("Registration + login successful!");
 
     const role = loginRes.data.role;
     if (role === "Admin") {
@@ -42,9 +43,19 @@ export default function Register() {
       window.location.href = "/auth/login";
     }
   } catch (err) {
-    alert("Registration or login failed: " + (err.response?.data || err.message));
+    const apiMessage =
+      err.response?.data?.message ||
+      err.response?.data?.title ||
+      (typeof err.response?.data === "string" ? err.response.data : "");
+    setErrorMessage(apiMessage || "Registration failed. Check your details and try again.");
   }
 };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await handleRegister();
+  };
 
   return (
     <>
@@ -73,7 +84,7 @@ export default function Register() {
                 <div className="text-blueGray-400 text-center mb-3 font-bold">
                   <small>Sign up with credentials</small>
                 </div>
-                <form>
+                <form onSubmit={handleSubmit} noValidate>
 
                   {/* Name */}
                   <div className="relative w-full mb-3">
@@ -160,11 +171,15 @@ export default function Register() {
                       <option value="Worker">Worker</option>
                     </select>
                   </div>
+
+                  {errorMessage ? (
+                    <p className="text-red-500 text-sm mb-3">{errorMessage}</p>
+                  ) : null}
+
                   {/* Submit Button */}
                   <div className="text-center mt-6">
                     <button
-                      type="button"
-                      onClick={handleRegister}
+                      type="submit"
                       className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
                     >
                       Create Account

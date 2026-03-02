@@ -5,6 +5,8 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   const categoryUrl = "/Category";
 
@@ -39,6 +41,14 @@ export default function Categories() {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  const visibleCategories = [...categories]
+    .filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) =>
+      sortDir === "asc"
+        ? (a.name || "").localeCompare(b.name || "")
+        : (b.name || "").localeCompare(a.name || "")
+    );
 
   return (
     <div className="flex flex-wrap mt-4">
@@ -90,8 +100,24 @@ export default function Categories() {
       <div className="w-full mb-12 px-4">
         <div className="relative flex flex-col min-w-0 break-words w-full shadow-lg rounded bg-white">
           <div className="rounded-t px-4 py-3 border-0">
-            <div className="flex items-center">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <h4 className="font-semibold text-md text-blueGray-600">All Categories</h4>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  className="border rounded px-3 py-1.5 text-sm"
+                  placeholder="Search categories"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <select
+                  className="border rounded px-7 py-1.5 pl-2 text-sm"
+                  value={sortDir}
+                  onChange={(e) => setSortDir(e.target.value)}
+                >
+                  <option value="asc">A - Z</option>
+                  <option value="desc">Z - A</option>
+                </select>
+              </div>
             </div>
           </div>
           <div className="block w-full overflow-x-auto">
@@ -107,7 +133,7 @@ export default function Categories() {
                 </tr>
               </thead>
               <tbody>
-                {categories.map((cat) => (
+                {visibleCategories.map((cat) => (
                   <tr key={cat.id}>
                     <td className="border-t px-6 py-3 text-sm align-middle">
                       {editingId === cat.id ? (
@@ -151,6 +177,16 @@ export default function Categories() {
                     </td>
                   </tr>
                 ))}
+                {visibleCategories.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={2}
+                      className="border-t px-6 py-4 text-sm text-blueGray-500 text-center"
+                    >
+                      No categories found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

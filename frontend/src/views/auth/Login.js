@@ -7,29 +7,41 @@ import SkillHireLogo from "assets/img/skillhire-logo2.png";
 
 export default function Login() {
   const [formData, setFormData] = useState({ username: "", password: "" });
+  const [errorMessage, setErrorMessage] = useState("");
   const history = useHistory();
 
   const handleChange = (e) => {
+    if (errorMessage) setErrorMessage("");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleLogin = async () => {
     try {
+      setErrorMessage("");
       const res = await api.post("/Auth/login", formData);
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data));
 
       const role = res.data.role;
-      alert("Login successful!");
 
       if (role === "Admin") history.push("/admin");
       else if (role === "Client") history.push("/client/HireWorker");
       else if (role === "Worker") history.push("/worker/MyPhotos");
       else history.push("/auth/login");
     } catch (err) {
-      alert("Login failed: " + (err.response?.data || err.message));
+      const apiMessage =
+        err.response?.data?.message ||
+        err.response?.data?.title ||
+        (typeof err.response?.data === "string" ? err.response.data : "");
+      setErrorMessage(apiMessage || "Email or password is wrong.");
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await handleLogin();
   };
 
   return (
@@ -63,7 +75,7 @@ export default function Login() {
                   <div className="text-blueGray-400 text-center mb-3 font-bold">
                     <small>Sign in with credentials</small>
                   </div>
-                  <form>
+                  <form onSubmit={handleSubmit} noValidate>
                     <div className="relative w-full mb-3">
                       <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Email
@@ -92,11 +104,14 @@ export default function Login() {
                       />
                     </div>
 
+                    {errorMessage ? (
+                      <p className="text-red-500 text-sm mb-3">{errorMessage}</p>
+                    ) : null}
+
                     <div className="text-center mt-6">
                       <button
                         className="bg-blueGray-800 text-white active:bg-blueGray-600 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full ease-linear transition-all duration-150"
-                        type="button"
-                        onClick={handleLogin}
+                        type="submit"
                       >
                         Sign In
                       </button>

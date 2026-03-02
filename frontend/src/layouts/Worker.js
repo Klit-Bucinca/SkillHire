@@ -1,5 +1,5 @@
 // src/layouts/Worker.js
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 
 import Sidebar from "components/Sidebar/WorkerSidebar.js";
@@ -7,10 +7,10 @@ import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import HeaderStats from "components/Headers/WorkerHeaderStats";
 import FooterAdmin from "components/Footers/FooterAdmin.js";
 
-import MyServices from "views/worker/MyServices.js";
-import MyClients from "views/worker/MyClients.js";
-import WorkerProfile from "views/worker/WorkerProfile.js";
-import MyPhotos from "views/worker/MyPhotos";
+const MyServices = lazy(() => import("views/worker/MyServices.js"));
+const MyClients = lazy(() => import("views/worker/MyClients.js"));
+const WorkerProfile = lazy(() => import("views/worker/WorkerProfile.js"));
+const MyPhotos = lazy(() => import("views/worker/MyPhotos"));
 
 export default function Worker() {
   return (
@@ -20,13 +20,15 @@ export default function Worker() {
         <AdminNavbar showSearch={false} showUser={false} />
         <HeaderStats />
         <div className="px-4 md:px-10 mx-auto w-full -m-24">
-          <Switch>
-            <Route path="/worker/MyServices" exact component={MyServices} />
-            <Route path="/worker/MyClients" exact component={MyClients} />
-            <Route path="/worker/WorkerProfile" exact component={WorkerProfile} />
-            <Route path="/worker/MyPhotos" exact component={MyPhotos} />
-            <Redirect from="/MyPhotos" to="/worker/MyPhotos" />
-          </Switch>
+          <Suspense fallback={<div className="p-4 text-blueGray-600">Loading...</div>}>
+            <Switch>
+              <Route path="/worker/MyServices" exact component={MyServices} />
+              <Route path="/worker/MyClients" exact component={MyClients} />
+              <Route path="/worker/WorkerProfile" exact component={WorkerProfile} />
+              <Route path="/worker/MyPhotos" exact component={MyPhotos} />
+              <Redirect from="/MyPhotos" to="/worker/MyPhotos" />
+            </Switch>
+          </Suspense>
           <FooterAdmin />
         </div>
       </div>

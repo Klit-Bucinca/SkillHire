@@ -6,6 +6,9 @@ export default function Services() {
   const [categories, setCategories] = useState([]);
   const [newService, setNewService] = useState({ name: "", categoryId: "" });
   const [editingId, setEditingId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDir, setSortDir] = useState("asc");
 
   const fetchData = async () => {
     const [sRes, cRes] = await Promise.all([
@@ -54,6 +57,27 @@ export default function Services() {
       alert("Delete failed: " + (err.response?.data?.title || err.message));
     }
   };
+
+  const getCategoryName = (categoryId) =>
+    categories.find((c) => c.id === categoryId)?.name || "-";
+
+  const visibleServices = [...services]
+    .filter((service) => {
+      const q = search.toLowerCase();
+      const categoryName = getCategoryName(service.categoryId).toLowerCase();
+      return (
+        (service.name || "").toLowerCase().includes(q) || categoryName.includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const aVal =
+        sortBy === "category" ? getCategoryName(a.categoryId) : (a.name || "");
+      const bVal =
+        sortBy === "category" ? getCategoryName(b.categoryId) : (b.name || "");
+      return sortDir === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
 
   return (
     <div className="flex flex-wrap mt-4">
@@ -122,7 +146,33 @@ export default function Services() {
       <div className="w-full mb-12 px-4">
         <div className="relative flex flex-col min-w-0 break-words w-full shadow-lg rounded bg-white">
           <div className="rounded-t px-4 py-3 border-0">
-            <h4 className="font-semibold text-md text-blueGray-600">All Services</h4>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <h4 className="font-semibold text-md text-blueGray-600">All Services</h4>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  className="border rounded px-3 py-1.5 text-sm"
+                  placeholder="Search services or category"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <select
+                  className="border rounded px-3 py-1.5 text-sm"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="name">Sort by name</option>
+                  <option value="category">Sort by category</option>
+                </select>
+                <select
+                  className="border rounded px-7 py-1.5 pl-2 text-sm"
+                  value={sortDir}
+                  onChange={(e) => setSortDir(e.target.value)}
+                >
+                  <option value="asc">A - Z</option>
+                  <option value="desc">Z - A</option>
+                </select>
+              </div>
+            </div>
           </div>
           <div className="block w-full overflow-x-auto">
             <table className="items-center w-full bg-transparent border-collapse">
@@ -134,7 +184,7 @@ export default function Services() {
                 </tr>
               </thead>
               <tbody>
-                {services.map((service) => (
+                {visibleServices.map((service) => (
                   <tr key={service.id}>
                     <td className="border-t px-6 py-3 text-sm">
                       {editingId === service.id ? (
@@ -176,7 +226,7 @@ export default function Services() {
                           ))}
                         </select>
                       ) : (
-                        categories.find((c) => c.id === service.categoryId)?.name || "-"
+                        getCategoryName(service.categoryId)
                       )}
                     </td>
                     <td className="border-t px-6 py-3 text-sm text-right space-x-2">
@@ -209,6 +259,16 @@ export default function Services() {
                     </td>
                   </tr>
                 ))}
+                {visibleServices.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="border-t px-6 py-4 text-sm text-blueGray-500 text-center"
+                    >
+                      No services found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
