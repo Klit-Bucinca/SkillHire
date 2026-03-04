@@ -4,7 +4,7 @@ import ReactDOM from "react-dom";
 import { useHistory, Link } from "react-router-dom";
 import api from "utils/axiosInstance";
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "http://localhost:5020";
+const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "https://localhost:7109";
 
 function Toast({ message, onClose }) {
   return (

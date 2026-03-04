@@ -1,4 +1,4 @@
-@SkillHire_HostAddress = http://localhost:5020
+@SkillHire_HostAddress = https://localhost:7109
 
 GET {{SkillHire_HostAddress}}/weatherforecast/
 Accept: application/json

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import api from "utils/axiosInstance";
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "http://localhost:5020";
+const backendUrl = process.env.REACT_APP_BACKEND_URL ?? "https://localhost:7109";
 
 export default function WorkerProfilePage() {
   const user = JSON.parse(localStorage.getItem("user"));
