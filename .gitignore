@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 *.env
+.env.*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -300,6 +301,11 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+
+# Local uploaded media and generated app data
+backend/SkillHire/wwwroot/uploads/profile-photos/*
+backend/SkillHire/wwwroot/uploads/worker-photos/*
+!backend/SkillHire/wwwroot/uploads/profile-photos/default.jpg
 
 # Visual Studio 6 build log
 *.plg

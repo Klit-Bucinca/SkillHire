@@ -10,7 +10,7 @@ import {
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "assets/styles/index.css";
 
-// layouts (lazy-loaded to reduce CRA dev startup work)
+
 const Admin = lazy(() => import("layouts/Admin.js"));
 const Auth = lazy(() => import("layouts/Auth.js"));
 const Client = lazy(() => import("layouts/Client.js"));

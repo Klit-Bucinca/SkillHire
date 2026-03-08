@@ -36,9 +36,9 @@ namespace SkillHire.Data
                 .OnDelete(DeleteBehavior.Restrict);    
 
             modelBuilder.Entity<Hire>()
-                .HasOne(h => h.Worker)
-                .WithMany()
-                .HasForeignKey(h => h.WorkerId)
+                .HasOne(h => h.Worker)//p,p.f
+                .WithMany()//f,f.p
+                .HasForeignKey(h => h.WorkerId)//p,p.fid
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
